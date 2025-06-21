@@ -21,9 +21,14 @@ export async function POST(req: Request) {
   try {
     const newLog = await req.json();
 
+    // Supprime le champ 'date' s’il existe pour éviter les conflits
+    if ('date' in newLog) {
+      delete newLog.date;
+    }
+
     const logToInsert = {
       ...newLog,
-      created_at: new Date().toISOString(),
+      created_at: new Date().toISOString(), // timestamp propre
     };
 
     const { error } = await supabaseServer.from(TABLE).insert(logToInsert);
