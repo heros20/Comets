@@ -2,37 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { logAdminAction } from "@/utils/adminLog";
 
-
 export default function GalleryAdmin() {
-   function handleAdd(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.url) return;
-    setLoading(true);
-    fetch("/api/gallery", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    }).then(() => {
-      logAdminAction("Ajouté une image à la galerie");
-      setGallery([{ ...form }, ...gallery]);
-      setForm({ url: "", legend: "" });
-      setSuccess(true);
-      setLoading(false);
-    });
-  }
-
-  function handleDelete(idx: number) {
-    setLoading(true);
-    fetch("/api/gallery", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ index: idx }),
-    }).then(() => {
-      logAdminAction("Supprimé une image de la galerie");
-      setGallery(gallery.filter((_, i) => i !== idx));
-      setLoading(false);
-    });
-  }
   const [gallery, setGallery] = useState<any[]>([]);
   const [form, setForm] = useState({ url: "", legend: "" });
   const [success, setSuccess] = useState(false);
@@ -44,7 +14,7 @@ export default function GalleryAdmin() {
     fetch("/api/gallery")
       .then(res => res.json())
       .then(data => {
-        setGallery(data);
+        setGallery(Array.isArray(data) ? data : []);
         setLoading(false);
       });
   }, []);
@@ -55,32 +25,38 @@ export default function GalleryAdmin() {
     setSuccess(false);
   }
 
-  function handleAdd(e: React.FormEvent) {
+  async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!form.url) return;
     setLoading(true);
-    fetch("/api/gallery", {
+    const res = await fetch("/api/gallery", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
-    }).then(() => {
-      setGallery([{ ...form }, ...gallery]);
+    });
+    if (res.ok) {
+      await logAdminAction("Ajouté une image à la galerie");
+      // Rechargement complet pour récupérer l'id généré
+      const data = await (await fetch("/api/gallery")).json();
+      setGallery(data);
       setForm({ url: "", legend: "" });
       setSuccess(true);
-      setLoading(false);
-    });
+    }
+    setLoading(false);
   }
 
-  function handleDelete(idx: number) {
+  async function handleDelete(id: number) {
     setLoading(true);
-    fetch("/api/gallery", {
+    const res = await fetch("/api/gallery", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ index: idx }),
-    }).then(() => {
-      setGallery(gallery.filter((_, i) => i !== idx));
-      setLoading(false);
+      body: JSON.stringify({ id }),
     });
+    if (res.ok) {
+      await logAdminAction("Supprimé une image de la galerie");
+      setGallery(gallery.filter(img => img.id !== id));
+    }
+    setLoading(false);
   }
 
   // UPLOAD local
@@ -170,11 +146,11 @@ export default function GalleryAdmin() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {gallery.map((img, i) => (
-          <div key={i} className="relative rounded-xl shadow-lg overflow-hidden group">
+        {gallery.map((img) => (
+          <div key={img.id} className="relative rounded-xl shadow-lg overflow-hidden group">
             <img
               src={img.url}
-              alt={img.legend || `Photo ${i + 1}`}
+              alt={img.legend || `Photo`}
               className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105"
             />
             {img.legend && (
@@ -183,7 +159,7 @@ export default function GalleryAdmin() {
               </div>
             )}
             <button
-              onClick={() => handleDelete(i)}
+              onClick={() => handleDelete(img.id)}
               className="absolute top-2 right-2 bg-red-600 hover:bg-red-800 text-white px-2 py-1 rounded-full text-xs shadow-lg transition"
               title="Supprimer cette image"
               disabled={loading}

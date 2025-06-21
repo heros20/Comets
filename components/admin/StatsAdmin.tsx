@@ -11,9 +11,12 @@ export default function StatsAdmin() {
     fetch("/api/stats")
       .then(res => res.json())
       .then(data => {
-        setStats(data);
+        if (data) {
+          setStats(data);
+        }
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -22,18 +25,24 @@ export default function StatsAdmin() {
     setSuccess(false);
   }
 
-  function handleSave(e: React.FormEvent) {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    fetch("/api/stats", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(stats),
-    }).then(() => {
-      logAdminAction("Modification des statistiques");
-      setSuccess(true);
+    try {
+      const res = await fetch("/api/stats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(stats),
+      });
+      if (res.ok) {
+        await logAdminAction("Modification des statistiques");
+        setSuccess(true);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
       setLoading(false);
-    });
+    }
   }
 
   if (loading) return <div>Chargement…</div>;
