@@ -1,5 +1,6 @@
 "use client";
 import useSWR from "swr";
+import Image from "next/image";
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -7,7 +8,7 @@ export default function Gallery() {
   const { data: gallery, isLoading } = useSWR(
     "/api/gallery",
     fetcher,
-    { refreshInterval: 4000 } // ← rafraîchit toutes les 4 secondes (modifiable)
+    { refreshInterval: 4000 }
   );
 
   if (isLoading || !gallery)
@@ -27,13 +28,17 @@ export default function Gallery() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {gallery.map((img: any, idx: number) => (
             <div
-              key={idx}
+              key={img.id || idx}
               className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 group"
             >
-              <img
+              <Image
                 src={img.url}
                 alt={img.legend || `Photo ${idx + 1}`}
-                className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                width={400}  // adapte en fonction de ta mise en page
+                height={256} // garder le ratio pour h-64
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                placeholder="blur"
+                blurDataURL="/placeholder.svg" // ou un petit placeholder
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               {img.legend && (

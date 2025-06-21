@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { logAdminAction } from "@/utils/adminLog";
 
 export default function GalleryAdmin() {
@@ -36,7 +37,6 @@ export default function GalleryAdmin() {
     });
     if (res.ok) {
       await logAdminAction("Ajouté une image à la galerie");
-      // Rechargement complet pour récupérer l'id généré
       const data = await (await fetch("/api/gallery")).json();
       setGallery(data);
       setForm({ url: "", legend: "" });
@@ -59,7 +59,7 @@ export default function GalleryAdmin() {
     setLoading(false);
   }
 
-  // UPLOAD local
+  // Upload local
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -131,11 +131,21 @@ export default function GalleryAdmin() {
         />
         {form.url && (
           <div className="flex items-center gap-3">
-            <img src={form.url} alt="Preview" className="w-24 h-20 object-cover rounded shadow border border-orange-200" />
+            <Image
+              src={form.url}
+              alt="Preview"
+              width={96}
+              height={80}
+              className="object-cover rounded shadow border border-orange-200"
+            />
             <span className="text-gray-500 text-sm">Prévisualisation</span>
           </div>
         )}
-        <button type="submit" className="mt-1 px-8 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold" disabled={loading}>
+        <button
+          type="submit"
+          className="mt-1 px-8 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold"
+          disabled={loading}
+        >
           Ajouter
         </button>
       </form>
@@ -148,10 +158,14 @@ export default function GalleryAdmin() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {gallery.map((img) => (
           <div key={img.id} className="relative rounded-xl shadow-lg overflow-hidden group">
-            <img
+            <Image
               src={img.url}
               alt={img.legend || `Photo`}
-              className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105"
+              width={400}
+              height={224}
+              style={{ objectFit: "cover" }}
+              className="transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
             />
             {img.legend && (
               <div className="absolute bottom-0 left-0 w-full bg-black/60 text-white text-sm px-3 py-2">
@@ -169,6 +183,7 @@ export default function GalleryAdmin() {
           </div>
         ))}
       </div>
+
       <div className="mt-6 text-sm text-gray-400 text-center">
         <b>Astuce :</b> Tu peux aussi <span className="underline">glisser-déposer</span> une image sur le formulaire d’ajout.
       </div>
