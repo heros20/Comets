@@ -12,16 +12,21 @@ const TAB_KEY = "admin_tab_comets";
 
 export default function Admin() {
   const [tab, setTab] = useState<string | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
-  // SECURISATION : Redirige si pas admin connecté
+  // TOUS les hooks en haut, pas de condition ici !
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("admin_connected") !== "1") {
-      router.replace("/admin/login");
+    if (typeof window !== "undefined") {
+      const isAdmin = localStorage.getItem("admin_connected") === "1";
+      if (!isAdmin) {
+        router.replace("/admin/login");
+      } else {
+        setIsCheckingAuth(false);
+      }
     }
   }, [router]);
 
-  // Tab sauvegardé dans localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem(TAB_KEY);
@@ -40,12 +45,14 @@ export default function Admin() {
     if (tab) localStorage.setItem(TAB_KEY, tab);
   }, [tab]);
 
-  if (!tab) return null;
+  // Maintenant, tu peux conditionner le rendu sans casser l’ordre
+  if (isCheckingAuth || !tab) {
+    return null; // ou loader, ça bloque l'affichage tant qu'on sait pas
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100 px-4 py-8">
-      <MessageNotifier /> {/* <= Ici, AVANT tout le layout ! */}
-      {/* Boutons déconnexion & retour */}
+      <MessageNotifier />
       <div className="flex justify-end mb-2">
         <button
           onClick={() => {
@@ -68,39 +75,24 @@ export default function Admin() {
       <h1 className="text-4xl font-extrabold text-red-700 mb-8 text-center drop-shadow-sm">
         Tableau de bord - Administration
       </h1>
+
       <div className="flex justify-center mb-6 gap-3 flex-wrap">
         {/* Onglets */}
-        <button
-          onClick={() => setTab("stats")}
-          className={`px-6 py-2 rounded-full font-bold shadow transition-colors duration-150 ${tab === "stats" ? "bg-red-600 text-white" : "bg-white text-red-600 border border-red-600 hover:bg-red-50"}`}
-        >
-          Statistiques
-        </button>
-        <button
-          onClick={() => setTab("team")}
-          className={`px-6 py-2 rounded-full font-bold shadow transition-colors duration-150 ${tab === "team" ? "bg-red-600 text-white" : "bg-white text-red-600 border border-red-600 hover:bg-red-50"}`}
-        >
-          Équipe
-        </button>
-        <button
-          onClick={() => setTab("gallery")}
-          className={`px-6 py-2 rounded-full font-bold shadow transition-colors duration-150 ${tab === "gallery" ? "bg-red-600 text-white" : "bg-white text-red-600 border border-red-600 hover:bg-red-50"}`}
-        >
-          Galerie
-        </button>
-        <button
-          onClick={() => setTab("messages")}
-          className={`px-6 py-2 rounded-full font-bold shadow transition-colors duration-150 ${tab === "messages" ? "bg-red-600 text-white" : "bg-white text-red-600 border border-red-600 hover:bg-red-50"}`}
-        >
-          Messages
-        </button>
-        <button
-          onClick={() => setTab("logs")}
-          className={`px-6 py-2 rounded-full font-bold shadow transition-colors duration-150 ${tab === "logs" ? "bg-red-600 text-white" : "bg-white text-red-600 border border-red-600 hover:bg-red-50"}`}
-        >
-          Journal
-        </button>
+        {["stats", "team", "gallery", "messages", "logs"].map((section) => (
+          <button
+            key={section}
+            onClick={() => setTab(section)}
+            className={`px-6 py-2 rounded-full font-bold shadow transition-colors duration-150 ${
+              tab === section
+                ? "bg-red-600 text-white"
+                : "bg-white text-red-600 border border-red-600 hover:bg-red-50"
+            }`}
+          >
+            {section.charAt(0).toUpperCase() + section.slice(1)}
+          </button>
+        ))}
       </div>
+
       <div className="bg-white rounded-2xl shadow-xl p-6 max-w-3xl mx-auto">
         {tab === "stats" && <StatsAdmin />}
         {tab === "team" && <TeamAdmin />}
