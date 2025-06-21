@@ -19,30 +19,30 @@ export default function Contact() {
     setSuccess(false);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: `${form.firstname} ${form.lastname}`.trim(),
-        email: form.email,
-        phone: form.phone,
-        message: form.message,
-        date: new Date().toLocaleString("fr-FR"),
-      }),
-    });
-    setLoading(false);
-    setSuccess(true);
-    setForm({
-      firstname: "",
-      lastname: "",
-      email: "",
-      phone: "",
-      message: "",
-    });
-  }
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
+  await fetch("/api/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: `${form.firstname} ${form.lastname}`.trim(),
+      email: form.email,
+      phone: form.phone,
+      message: form.message,
+      // Pas besoin d'envoyer 'date', le serveur gère 'created_at' automatiquement
+    }),
+  });
+  setLoading(false);
+  setSuccess(true);
+  setForm({
+    firstname: "",
+    lastname: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+}
 
   return (
     <section id="contact" className="py-20 bg-gradient-to-br from-red-600 to-orange-500">
