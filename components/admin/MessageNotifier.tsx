@@ -20,28 +20,27 @@ export default function MessageNotifier() {
           return;
         }
         if (data.length > lastCount.current) {
-          // VISUEL
+          // Visuel
           const notif = document.createElement("div");
           notif.innerText = "📣 Nouveau message reçu !";
           notif.className =
             "fixed top-4 right-4 z-[9999] bg-red-600 text-white px-6 py-3 rounded-full shadow-lg text-lg font-bold animate-bounce";
           document.body.appendChild(notif);
           setTimeout(() => notif.remove(), 4000);
-          // SONORE
+          // Sonore
           audioRef.current?.play();
         }
         lastCount.current = data.length;
       } catch (err) {
-        // ignore error
+        // Ignore errors pour pas casser le flow
       }
     }
 
-    // Lance le polling toutes les 2s
+    // Check toutes les 2 secondes
     interval = setInterval(() => {
       if (polling) checkMessages();
     }, 2000);
 
-    // Clean up on unmount
     return () => {
       polling = false;
       clearInterval(interval);
