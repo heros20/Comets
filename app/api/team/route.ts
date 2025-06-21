@@ -4,7 +4,10 @@ import { supabaseServer } from "@/lib/supabaseServer";
 const TABLE = "team";
 
 export async function GET() {
-  const { data, error } = await supabaseServer.from(TABLE).select("*").order("number", { ascending: true });
+  const { data, error } = await supabaseServer
+    .from(TABLE)
+    .select("*")
+    .order("number", { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -23,7 +26,6 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   const { id, member } = await req.json();
-  // ici on utilise id au lieu de index pour identifier le membre
 
   if (!id) return NextResponse.json({ error: "ID missing" }, { status: 400 });
 
