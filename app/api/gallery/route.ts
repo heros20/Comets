@@ -1,28 +1,42 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
+import { supabaseServer } from "@/lib/supabaseServer";
 
-const DATA_PATH = path.join(process.cwd(), "data", "gallery.json");
+const TABLE = "gallery";
 
 export async function GET() {
-  const data = await fs.readFile(DATA_PATH, "utf-8");
-  return NextResponse.json(JSON.parse(data));
+  const { data, error } = await supabaseServer
+    .from(TABLE)
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json(data || []);
 }
 
 export async function POST(req: Request) {
   const newImage = await req.json();
-  const data = await fs.readFile(DATA_PATH, "utf-8");
-  const gallery = JSON.parse(data);
-  gallery.unshift(newImage); // Ajout en haut
-  await fs.writeFile(DATA_PATH, JSON.stringify(gallery, null, 2), "utf-8");
+
+  const imageToInsert = {
+    ...newImage,
+    created_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabaseServer.from(TABLE).insert(imageToInsert);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
   return NextResponse.json({ success: true });
 }
 
 export async function DELETE(req: Request) {
-  const { index } = await req.json();
-  const data = await fs.readFile(DATA_PATH, "utf-8");
-  const gallery = JSON.parse(data);
-  gallery.splice(index, 1);
-  await fs.writeFile(DATA_PATH, JSON.stringify(gallery, null, 2), "utf-8");
+  const { id } = await req.json();
+
+  if (!id) return NextResponse.json({ error: "ID manquant" }, { status: 400 });
+
+  const { error } = await supabaseServer.from(TABLE).delete().eq("id", id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
   return NextResponse.json({ success: true });
 }
