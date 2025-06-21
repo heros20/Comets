@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { logAdminAction } from "@/utils/adminLog";
 
 type Member = {
+  id?: number; // <- IMPORTANT : id optionnel ici
   name: string;
   position: string;
   number: number | string;
@@ -27,7 +28,7 @@ export default function TeamAdmin() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Charge les membres au montage
+  // Charge les membres avec leur id
   useEffect(() => {
     fetch("/api/team")
       .then(res => res.json())
@@ -40,7 +41,6 @@ export default function TeamAdmin() {
     setSuccess(false);
   }
 
-  // Upload image et preview via FileReader
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -54,6 +54,12 @@ export default function TeamAdmin() {
     reader.readAsDataURL(file);
   }
 
+  async function reloadTeam() {
+    const res = await fetch("/api/team");
+    const data = await res.json();
+    setTeam(data);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.position || !form.number) {
@@ -62,20 +68,27 @@ export default function TeamAdmin() {
     }
 
     setLoading(true);
-
     const payload = { ...form, number: Number(form.number) };
 
     if (editingIndex !== null) {
-      // Edition
+      // Edition : utilise l'id stocké
+      const id = team[editingIndex].id;
+      if (!id) {
+        alert("Erreur : cet élément ne possède pas d'ID.");
+        setLoading(false);
+        return;
+      }
+
       await fetch("/api/team", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ index: editingIndex, member: payload }),
+        body: JSON.stringify({ id, member: payload }),
       });
       logAdminAction(`Modifié ${form.name} (équipe)`);
 
+      // Mise à jour locale pour UX rapide
       const updated = [...team];
-      updated[editingIndex] = payload;
+      updated[editingIndex] = { ...payload, id };
       setTeam(updated);
       setEditingIndex(null);
     } else {
@@ -86,7 +99,9 @@ export default function TeamAdmin() {
         body: JSON.stringify(payload),
       });
       logAdminAction(`Ajouté ${form.name} à l’équipe`);
-      setTeam([...team, payload]);
+
+      // Recharge la liste complète avec IDs actualisés
+      await reloadTeam();
     }
 
     setForm({ name: "", position: "", number: "", experience: "", image: "", bio: "" });
@@ -102,13 +117,21 @@ export default function TeamAdmin() {
 
   async function handleDelete(i: number) {
     if (!confirm(`Confirmer la suppression de ${team[i].name} ?`)) return;
+    const id = team[i].id;
+    if (!id) {
+      alert("Erreur : cet élément ne possède pas d'ID.");
+      return;
+    }
+
     setLoading(true);
     await fetch("/api/team", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ index: i }),
+      body: JSON.stringify({ id }),
     });
     logAdminAction(`Supprimé ${team[i].name} de l’équipe`);
+
+    // Mise à jour locale immédiate
     setTeam(team.filter((_, idx) => idx !== i));
     setLoading(false);
   }
@@ -191,7 +214,7 @@ export default function TeamAdmin() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {team.map((member, i) => (
           <div
-            key={i}
+            key={member.id || i}
             className="bg-orange-50 border border-orange-200 rounded-lg shadow p-4 flex items-center gap-4 relative"
           >
             <img

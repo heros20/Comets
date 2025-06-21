@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 
 type Member = {
+  id?: number;
   name: string;
   position: string;
   number: number;
@@ -14,31 +15,33 @@ export default function Team() {
   const [teamMembers, setTeamMembers] = useState<Member[]>([]);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fonction pour fetcher la team
   async function fetchTeam() {
     try {
       const res = await fetch("/api/team", { cache: "no-store" });
+      if (!res.ok) throw new Error("Erreur lors du chargement de l'équipe");
       const data = await res.json();
       setTeamMembers(data);
-      setLoading(false);
-    } catch {
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    fetchTeam(); // Premier fetch au montage
-
-    const intervalId = setInterval(() => {
-      fetchTeam();
-    }, 5000); // rafraîchit toutes les 5s
-
-    return () => clearInterval(intervalId); // nettoyage au démontage
+    fetchTeam();
+    const intervalId = setInterval(fetchTeam, 5000);
+    return () => clearInterval(intervalId);
   }, []);
 
   if (loading) {
     return <div className="text-center py-20 text-red-700">Chargement de l’équipe…</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-20 text-red-700">Erreur : {error}</div>;
   }
 
   return (
@@ -50,9 +53,9 @@ export default function Team() {
             {teamMembers.length === 0 ? (
               <p className="col-span-full text-center text-gray-500">Aucun membre trouvé.</p>
             ) : (
-              teamMembers.map((member, i) => (
+              teamMembers.map((member) => (
                 <div
-                  key={i}
+                  key={member.id ?? member.name} // id prioritaire, sinon fallback au name (qui doit être unique)
                   className="cursor-pointer rounded-xl overflow-hidden shadow-lg border border-orange-300 hover:shadow-2xl transition"
                   onClick={() => setSelectedMember(member)}
                 >
@@ -77,7 +80,6 @@ export default function Team() {
         </div>
       </section>
 
-      {/* Modal fiche perso */}
       {selectedMember && (
         <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
@@ -85,7 +87,7 @@ export default function Team() {
         >
           <div
             className="bg-white rounded-xl max-w-lg w-full p-6 relative"
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedMember(null)}
