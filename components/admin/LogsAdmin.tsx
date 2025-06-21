@@ -22,13 +22,13 @@ export default function LogsAdmin() {
         {logs.length === 0 && <div className="text-gray-500">Aucune action pour l’instant…</div>}
         {logs.map((log: any) => (
           <div
-            key={log.id ?? log.date ?? Math.random()}
+            key={log.id ?? log.created_at ?? Math.random()}
             className="bg-orange-50 border border-orange-200 rounded px-4 py-2 text-sm"
           >
             <span className="text-red-700 font-bold">{log.user || "Anonyme"}</span>
             <span className="mx-2 text-gray-500">–</span>
             {log.action}
-            <span className="ml-2 text-gray-500">({formatDate(log.date)})</span>
+            <span className="ml-2 text-gray-500">({formatDate(log.created_at)})</span>
           </div>
         ))}
       </div>
