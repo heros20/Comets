@@ -9,22 +9,33 @@ export async function GET() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("GET /api/admin-logs error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json(data || []);
 }
 
 export async function POST(req: Request) {
-  const newLog = await req.json();
+  try {
+    const newLog = await req.json();
 
-  const logToInsert = {
-    ...newLog,
-    created_at: new Date().toISOString(),
-  };
+    const logToInsert = {
+      ...newLog,
+      created_at: new Date().toISOString(),
+    };
 
-  const { error } = await supabaseServer.from(TABLE).insert(logToInsert);
+    const { error } = await supabaseServer.from(TABLE).insert(logToInsert);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error("POST /api/admin-logs insert error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
-  return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    console.error("POST /api/admin-logs unexpected error:", e);
+    return NextResponse.json({ error: "Erreur inattendue côté serveur" }, { status: 500 });
+  }
 }
