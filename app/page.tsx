@@ -7,6 +7,7 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import BaseballBalle from "@/components/BaseballBalle";
 import BoutonAdmin from "@/components/BoutonAdmin";
+import HymneComets from "@/components/HymneComets";
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
       <Team />
       <Gallery />
       <Contact />
+      <HymneComets />
       <Footer />
     </>
   );
