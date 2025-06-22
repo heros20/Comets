@@ -2,15 +2,12 @@
 import useSWR from "swr";
 import Image from "next/image";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function Gallery() {
-  const { data: gallery, isLoading } = useSWR(
-    "/api/gallery",
-    fetcher
-  );
-
+  const { data: gallery, isLoading } = useSWR("/api/gallery", fetcher);
   const [modalImg, setModalImg] = useState<{ url: string; legend?: string } | null>(null);
 
   if (isLoading || !gallery)
@@ -39,7 +36,9 @@ export default function Gallery() {
               aria-label={`Afficher la photo ${idx + 1} en grand`}
               role="button"
               tabIndex={0}
-              onKeyDown={e => { if (e.key === "Enter" || e.key === " ") setModalImg({ url: img.url, legend: img.legend }); }}
+              onKeyDown={e => {
+                if (e.key === "Enter" || e.key === " ") setModalImg({ url: img.url, legend: img.legend });
+              }}
             >
               <Image
                 src={img.url}
@@ -62,42 +61,49 @@ export default function Gallery() {
         </div>
       </div>
 
-      {/* MODALE */}
-      {modalImg && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
-          onClick={() => setModalImg(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Image en grand format"
-        >
-          <div
-            className="relative max-w-[90vw] max-h-[90vh] cursor-auto"
-            onClick={e => e.stopPropagation()}
+      {/* MODALE ANIMÉE */}
+      <AnimatePresence>
+        {modalImg && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+            onClick={() => setModalImg(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Image en grand format"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <button
-              onClick={() => setModalImg(null)}
-              className="absolute top-2 right-2 text-white bg-black bg-opacity-60 rounded-full p-2 hover:bg-opacity-90 transition"
-              aria-label="Fermer l'image"
+            <motion.div
+              className="relative max-w-[90vw] max-h-[90vh] cursor-auto"
+              onClick={e => e.stopPropagation()}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             >
-              ✕
-            </button>
-            <Image
-              src={modalImg.url}
-              alt={modalImg.legend || "Image agrandie"}
-              width={800}
-              height={1200}
-              style={{ objectFit: "contain" }}
-              priority
-            />
-            {modalImg.legend && (
-              <div className="mt-2 text-center text-white font-semibold">
-                {modalImg.legend}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+              <button
+                onClick={() => setModalImg(null)}
+                className="absolute top-2 right-2 text-white bg-black bg-opacity-60 rounded-full p-2 hover:bg-opacity-90 transition"
+                aria-label="Fermer l'image"
+              >
+                ✕
+              </button>
+              <Image
+                src={modalImg.url}
+                alt={modalImg.legend || "Image agrandie"}
+                width={800}
+                height={1200}
+                style={{ objectFit: "contain" }}
+                priority
+              />
+              {modalImg.legend && (
+                <div className="mt-2 text-center text-white font-semibold">{modalImg.legend}</div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
