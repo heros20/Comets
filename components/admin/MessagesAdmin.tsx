@@ -5,8 +5,10 @@ import { logAdminAction } from "@/utils/adminLog";
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr: string | undefined) {
+  if (!dateStr) return "Date inconnue";
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "Date invalide";
   return date.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
 }
 
@@ -75,7 +77,7 @@ export default function MessagesAdmin() {
             >
               ✕
             </button>
-            <div className="text-sm text-gray-500 mb-2">{formatDate(msg.date)}</div>
+            <div className="text-sm text-gray-500 mb-2">{formatDate(msg.created_at)}</div>
             <div className="flex flex-wrap gap-4 mb-2">
               <span className="font-bold text-red-700">{msg.name}</span>
               <span className="text-orange-700">{msg.email}</span>
