@@ -8,7 +8,7 @@ export default function Gallery() {
   const { data: gallery, isLoading } = useSWR(
     "/api/gallery",
     fetcher
-    // plus de refreshInterval => fetch unique au montage, pas de surcharge
+    // Pas de refreshInterval, fetch unique au montage, pas de surcharge inutile
   );
 
   if (isLoading || !gallery)
@@ -23,7 +23,9 @@ export default function Gallery() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-red-700 mb-4">Galerie Photos</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Revivez nos meilleurs moments sur le terrain</p>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Revivez nos meilleurs moments sur le terrain
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {gallery.map((img: any, idx: number) => (
@@ -35,12 +37,13 @@ export default function Gallery() {
                 src={img.url}
                 alt={img.legend || `Photo ${idx + 1}`}
                 width={400}
-                height={256}
+                height={600} // Format portrait vertical qui déchire
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                 placeholder="blur"
                 blurDataURL="/placeholder.svg"
+                loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               {img.legend && (
                 <div className="absolute bottom-2 left-2 bg-white/80 rounded px-3 py-1 text-orange-700 font-semibold text-sm shadow">
                   {img.legend}

@@ -15,7 +15,7 @@ export default function Footer() {
             <h3 className="text-xl font-bold">Les Comets d'Honfleur</h3>
           </div>
           <p className="text-gray-400">
-            Club de baseball passionné depuis 2016. Rejoignez-nous pour vivre l'aventure du baseball normand !
+            Club de baseball passionné depuis 2005. Rejoignez-nous pour vivre l'aventure du baseball normand !
           </p>
         </div>
         <div>
