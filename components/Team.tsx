@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Member = {
   name: string;
@@ -14,7 +15,6 @@ export default function Team() {
   const [teamMembers, setTeamMembers] = useState<Member[]>([]);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
-  const [animateModal, setAnimateModal] = useState(false);
 
   useEffect(() => {
     fetch("/api/team")
@@ -25,14 +25,6 @@ export default function Team() {
       })
       .catch(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    if(selectedMember) {
-      setAnimateModal(true);
-    } else {
-      setAnimateModal(false);
-    }
-  }, [selectedMember]);
 
   if (loading) return <div className="text-center py-20">Chargement de l’équipe…</div>;
 
@@ -69,46 +61,46 @@ export default function Team() {
         </div>
       </section>
 
-      {/* Modal fiche perso */}
-      {selectedMember && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
-          onClick={() => setSelectedMember(null)}
-          style={{
-            opacity: animateModal ? 1 : 0,
-            transition: "opacity 300ms ease-in-out",
-          }}
-        >
-          <div
-            className="bg-white rounded-xl max-w-lg w-full p-6 relative"
-            onClick={e => e.stopPropagation()} // bloque fermeture au clic dans modal
-            style={{
-              transform: animateModal ? "scale(1)" : "scale(0.9)",
-              transition: "transform 300ms ease-in-out",
-            }}
+      {/* Modal fiche perso avec Framer Motion */}
+      <AnimatePresence>
+        {selectedMember && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+            onClick={() => setSelectedMember(null)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <button
-              onClick={() => setSelectedMember(null)}
-              className="absolute top-4 right-4 text-red-600 font-bold text-xl"
-              aria-label="Fermer la fiche"
+            <motion.div
+              className="bg-white rounded-xl max-w-lg w-full p-6 relative"
+              onClick={e => e.stopPropagation()}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1, transition: { duration: 0.3, ease: "easeOut" } }}
+              exit={{ scale: 0.9, opacity: 0, transition: { duration: 0.2, ease: "easeIn" } }}
             >
-              ×
-            </button>
-            <img
-              src={selectedMember.image || "/placeholder.svg"}
-              alt={selectedMember.name}
-              className="w-full h-64 object-cover rounded-lg mb-4"
-            />
-            <h2 className="text-3xl font-bold text-red-700 mb-2">{selectedMember.name}</h2>
-            <p className="text-orange-600 font-semibold mb-4">
-              {selectedMember.position} #{selectedMember.number}
-            </p>
-            <p className="text-gray-700 whitespace-pre-line">
-              {selectedMember.bio || "Pas encore de description."}
-            </p>
-          </div>
-        </div>
-      )}
+              <button
+                onClick={() => setSelectedMember(null)}
+                className="absolute top-4 right-4 text-red-600 font-bold text-xl"
+                aria-label="Fermer la fiche"
+              >
+                ×
+              </button>
+              <img
+                src={selectedMember.image || "/placeholder.svg"}
+                alt={selectedMember.name}
+                className="w-full h-64 object-cover rounded-lg mb-4"
+              />
+              <h2 className="text-3xl font-bold text-red-700 mb-2">{selectedMember.name}</h2>
+              <p className="text-orange-600 font-semibold mb-4">
+                {selectedMember.position} #{selectedMember.number}
+              </p>
+              <p className="text-gray-700 whitespace-pre-line">
+                {selectedMember.bio || "Pas encore de description."}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
