@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://comets-git-main-herosqwerty-1719s-projects.vercel.app/sitemap.xml
