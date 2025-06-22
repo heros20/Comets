@@ -7,9 +7,11 @@ export default function Footer() {
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-2xl">⚾️</span>
-            </div>
+            <img
+              src="/images/honfleurcomets.png"
+              alt="Logo Les Comets d'Honfleur"
+              className="w-10 h-10 object-contain"
+            />
             <h3 className="text-xl font-bold">Les Comets d'Honfleur</h3>
           </div>
           <p className="text-gray-400">

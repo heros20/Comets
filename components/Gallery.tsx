@@ -7,8 +7,8 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 export default function Gallery() {
   const { data: gallery, isLoading } = useSWR(
     "/api/gallery",
-    fetcher,
-    { refreshInterval: 4000 }
+    fetcher
+    // plus de refreshInterval => fetch unique au montage, pas de surcharge
   );
 
   if (isLoading || !gallery)
@@ -31,15 +31,14 @@ export default function Gallery() {
               key={img.id || idx}
               className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 group"
             >
-
               <Image
                 src={img.url}
                 alt={img.legend || `Photo ${idx + 1}`}
-                width={400}  // adapte en fonction de ta mise en page
-                height={256} // garder le ratio pour h-64
+                width={400}
+                height={256}
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                 placeholder="blur"
-                blurDataURL="/placeholder.svg" // ou un petit placeholder
+                blurDataURL="/placeholder.svg"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               {img.legend && (
