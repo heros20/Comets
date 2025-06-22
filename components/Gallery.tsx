@@ -8,7 +8,7 @@ export default function Gallery() {
   const { data: gallery, isLoading } = useSWR(
     "/api/gallery",
     fetcher
-    // Pas de refreshInterval, fetch unique au montage, pas de surcharge inutile
+    // Pas de refreshInterval, fetch unique au montage pour éviter surcharge
   );
 
   if (isLoading || !gallery)
@@ -32,18 +32,19 @@ export default function Gallery() {
             <div
               key={img.id || idx}
               className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 group"
+              style={{ aspectRatio: "2 / 3", width: "100%" }}
             >
               <Image
                 src={img.url}
                 alt={img.legend || `Photo ${idx + 1}`}
-                width={400}
-                height={600} // Format portrait vertical qui déchire
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                fill
+                style={{ objectFit: "cover" }}
                 placeholder="blur"
                 blurDataURL="/placeholder.svg"
                 loading="lazy"
+                sizes="(max-width: 768px) 100vw, 400px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               {img.legend && (
                 <div className="absolute bottom-2 left-2 bg-white/80 rounded px-3 py-1 text-orange-700 font-semibold text-sm shadow">
                   {img.legend}
