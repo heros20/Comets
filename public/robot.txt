@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://comets-git-main-herosqwerty-1719s-projects.vercel.app/sitemap.xml
+Sitemap: https://les-comets-honfleur.vercel.app/sitemap.xml

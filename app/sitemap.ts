@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-const baseUrl = "https://comets-git-main-herosqwerty-1719s-projects.vercel.app";
+const baseUrl = "https://les-comets-honfleur.vercel.app/";
 
 return [
 {

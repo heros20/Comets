@@ -14,7 +14,7 @@ export default function Head() {
       <meta name="viewport" content="width=device-width, initial-scale=1" />
 
       <link rel="icon" href="/favicon.ico" />
-      <link rel="canonical" href="https://comets-git-main-herosqwerty-1719s-projects.vercel.app" />
+      <link rel="canonical" href="https://les-comets-honfleur.vercel.app/.vercel.app" />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
@@ -23,8 +23,8 @@ export default function Head() {
         property="og:description"
         content="Rejoignez Les Comets d'Honfleur, l'équipe de baseball de la région. Suivez nos actualités, matchs et entraînements."
       />
-      <meta property="og:url" content="https://comets-git-main-herosqwerty-1719s-projects.vercel.app" />
-      <meta property="og:image" content="https://comets-git-main-herosqwerty-1719s-projects.vercel.app/images/baseballwallpaper.webp" />
+      <meta property="og:url" content="https://les-comets-honfleur.vercel.app" />
+      <meta property="og:image" content="https://les-comets-honfleur.vercel.app/images/baseballwallpaper.webp" />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -33,7 +33,7 @@ export default function Head() {
         name="twitter:description"
         content="Rejoignez Les Comets d'Honfleur, l'équipe de baseball de la région. Suivez nos actualités, matchs et entraînements."
       />
-      <meta name="twitter:image" content="https://comets-git-main-herosqwerty-1719s-projects.vercel.app/images/baseballwallpaper.webp" />
+      <meta name="twitter:image" content="https://les-comets-honfleur.vercel.app/images/baseballwallpaper.webp" />
       <meta name="google-site-verification" content="gwi_1N79m9NaFbKmzhg8K9EOL6pv8kxcYFPCm_7YS58" />
       {/* JSON-LD pour SEO */}
       <script
@@ -44,8 +44,8 @@ export default function Head() {
             "@type": "SportsTeam",
             name: "Les Comets d'Honfleur",
             sport: "Baseball",
-            url: "https://comets-git-main-herosqwerty-1719s-projects.vercel.app",
-            logo: "https://comets-git-main-herosqwerty-1719s-projects.vercel.app/images/logo.png",
+            url: "https://les-comets-honfleur.vercel.app/",
+            logo: "https://les-comets-honfleur.vercel.app/images/logo.png",
             memberOf: {
               "@type": "SportsOrganization",
               name: "Ligue régionale de baseball",
