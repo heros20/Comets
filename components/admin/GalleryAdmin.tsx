@@ -8,16 +8,19 @@ export default function GalleryAdmin() {
   const [form, setForm] = useState({ url: "", legend: "" });
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [adminUser, setAdminUser] = useState("Anonyme");
   const fileInput = useRef<HTMLInputElement>(null);
 
-  // Charger la galerie au montage
+  // Charger la galerie et récupérer admin user
   useEffect(() => {
     fetch("/api/gallery")
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setGallery(Array.isArray(data) ? data : []);
         setLoading(false);
       });
+    const storedUser = localStorage.getItem("admin_user");
+    if (storedUser) setAdminUser(storedUser);
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -36,7 +39,7 @@ export default function GalleryAdmin() {
       body: JSON.stringify(form),
     });
     if (res.ok) {
-      await logAdminAction("Ajouté une image à la galerie");
+      await logAdminAction("Ajouté une image à la galerie", adminUser);
       const data = await (await fetch("/api/gallery")).json();
       setGallery(data);
       setForm({ url: "", legend: "" });
@@ -53,13 +56,12 @@ export default function GalleryAdmin() {
       body: JSON.stringify({ id }),
     });
     if (res.ok) {
-      await logAdminAction("Supprimé une image de la galerie");
-      setGallery(gallery.filter(img => img.id !== id));
+      await logAdminAction("Supprimé une image de la galerie", adminUser);
+      setGallery(gallery.filter((img) => img.id !== id));
     }
     setLoading(false);
   }
 
-  // Upload local
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;

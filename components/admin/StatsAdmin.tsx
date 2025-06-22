@@ -6,8 +6,13 @@ export default function StatsAdmin() {
   const [stats, setStats] = useState({ victoires: 0, joueurs: 0, annees: 0, entrainements: 0 });
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
+  const [adminUser, setAdminUser] = useState("Anonyme");
 
   useEffect(() => {
+    // Récupère le user admin connecté
+    const storedUser = localStorage.getItem("admin_user");
+    if (storedUser) setAdminUser(storedUser);
+
     fetch("/api/stats")
       .then(res => res.json())
       .then(data => {
@@ -35,7 +40,7 @@ export default function StatsAdmin() {
         body: JSON.stringify(stats),
       });
       if (res.ok) {
-        await logAdminAction("Modification des statistiques");
+        await logAdminAction("Modification des statistiques", adminUser);
         setSuccess(true);
       }
     } catch (err) {

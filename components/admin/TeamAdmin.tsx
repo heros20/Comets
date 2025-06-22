@@ -25,19 +25,22 @@ export default function TeamAdmin() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [adminUser, setAdminUser] = useState("Anonyme");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Charge les membres avec leur id
+  // Charge les membres avec leur id et récupère admin user
   useEffect(() => {
     fetch("/api/team")
-      .then(res => res.json())
-      .then(data => setTeam(data));
+      .then((res) => res.json())
+      .then((data) => setTeam(data));
+    const storedUser = localStorage.getItem("admin_user");
+    if (storedUser) setAdminUser(storedUser);
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    setForm((f) => ({ ...f, [name]: value }));
     setSuccess(false);
   }
 
@@ -48,7 +51,7 @@ export default function TeamAdmin() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const url = event.target?.result as string;
-      setForm(f => ({ ...f, image: url }));
+      setForm((f) => ({ ...f, image: url }));
       setSuccess(false);
     };
     reader.readAsDataURL(file);
@@ -71,7 +74,6 @@ export default function TeamAdmin() {
     const payload = { ...form, number: Number(form.number) };
 
     if (editingIndex !== null) {
-      // Edition : utilise l'id stocké
       const id = team[editingIndex].id;
       if (!id) {
         alert("Erreur : cet élément ne possède pas d'ID.");
@@ -84,23 +86,20 @@ export default function TeamAdmin() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, member: payload }),
       });
-      logAdminAction(`Modifié ${form.name} (équipe)`);
+      await logAdminAction(`Modifié ${form.name} (équipe)`, adminUser);
 
-      // Mise à jour locale pour UX rapide
       const updated = [...team];
       updated[editingIndex] = { ...payload, id };
       setTeam(updated);
       setEditingIndex(null);
     } else {
-      // Ajout
       await fetch("/api/team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      logAdminAction(`Ajouté ${form.name} à l’équipe`);
+      await logAdminAction(`Ajouté ${form.name} à l’équipe`, adminUser);
 
-      // Recharge la liste complète avec IDs actualisés
       await reloadTeam();
     }
 
@@ -129,9 +128,8 @@ export default function TeamAdmin() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    logAdminAction(`Supprimé ${team[i].name} de l’équipe`);
+    await logAdminAction(`Supprimé ${team[i].name} de l’équipe`, adminUser);
 
-    // Mise à jour locale immédiate
     setTeam(team.filter((_, idx) => idx !== i));
     setLoading(false);
   }
