@@ -14,6 +14,7 @@ export default function Team() {
   const [teamMembers, setTeamMembers] = useState<Member[]>([]);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
+  const [animateModal, setAnimateModal] = useState(false);
 
   useEffect(() => {
     fetch("/api/team")
@@ -24,6 +25,14 @@ export default function Team() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if(selectedMember) {
+      setAnimateModal(true);
+    } else {
+      setAnimateModal(false);
+    }
+  }, [selectedMember]);
 
   if (loading) return <div className="text-center py-20">Chargement de l’équipe…</div>;
 
@@ -65,10 +74,18 @@ export default function Team() {
         <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
           onClick={() => setSelectedMember(null)}
+          style={{
+            opacity: animateModal ? 1 : 0,
+            transition: "opacity 300ms ease-in-out",
+          }}
         >
           <div
             className="bg-white rounded-xl max-w-lg w-full p-6 relative"
             onClick={e => e.stopPropagation()} // bloque fermeture au clic dans modal
+            style={{
+              transform: animateModal ? "scale(1)" : "scale(0.9)",
+              transition: "transform 300ms ease-in-out",
+            }}
           >
             <button
               onClick={() => setSelectedMember(null)}
