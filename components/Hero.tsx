@@ -82,7 +82,7 @@ export default function Hero() {
             Voir les Entraînements
           </button>
           {showTraining && (
-            <div className="absolute top-full mt-2 right-0 w-48 bg-white rounded shadow-lg p-4 text-red-700 font-semibold text-sm z-50 border border-red-300">
+            <div className="absolute top-full mt-2 right-0 w-48 bg-white-transparent rounded shadow-lg p-4 text-red-900 font-semibold text-sm z-50 border border-red-300">
               <div>Mardi : 17h - 19h</div>
               <div>Jeudi : 19h - 21h</div>
             </div>

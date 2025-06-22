@@ -2,12 +2,11 @@
 import { useState, useEffect } from "react";
 
 type Member = {
-  id?: number;
   name: string;
   position: string;
   number: number;
   experience?: string;
-  image?: string;
+  image: string;
   bio?: string;
 };
 
@@ -15,34 +14,18 @@ export default function Team() {
   const [teamMembers, setTeamMembers] = useState<Member[]>([]);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  async function fetchTeam() {
-    try {
-      const res = await fetch("/api/team", { cache: "no-store" });
-      if (!res.ok) throw new Error("Erreur lors du chargement de l'équipe");
-      const data = await res.json();
-      setTeamMembers(data);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   useEffect(() => {
-    fetchTeam();
-    const intervalId = setInterval(fetchTeam, 5000);
-    return () => clearInterval(intervalId);
+    fetch("/api/team")
+      .then(res => res.json())
+      .then(data => {
+        setTeamMembers(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return <div className="text-center py-20 text-red-700">Chargement de l’équipe…</div>;
-  }
-
-  if (error) {
-    return <div className="text-center py-20 text-red-700">Erreur : {error}</div>;
-  }
+  if (loading) return <div className="text-center py-20">Chargement de l’équipe…</div>;
 
   return (
     <>
@@ -53,9 +36,9 @@ export default function Team() {
             {teamMembers.length === 0 ? (
               <p className="col-span-full text-center text-gray-500">Aucun membre trouvé.</p>
             ) : (
-              teamMembers.map((member) => (
+              teamMembers.map((member, i) => (
                 <div
-                  key={member.id ?? member.name} // id prioritaire, sinon fallback au name (qui doit être unique)
+                  key={i}
                   className="cursor-pointer rounded-xl overflow-hidden shadow-lg border border-orange-300 hover:shadow-2xl transition"
                   onClick={() => setSelectedMember(member)}
                 >
@@ -69,9 +52,6 @@ export default function Team() {
                       {member.name} <span className="text-orange-600">#{member.number}</span>
                     </h3>
                     <p className="text-orange-700">{member.position}</p>
-                    {member.experience && (
-                      <p className="text-gray-600 text-sm mt-1">{member.experience}</p>
-                    )}
                   </div>
                 </div>
               ))
@@ -80,6 +60,7 @@ export default function Team() {
         </div>
       </section>
 
+      {/* Modal fiche perso */}
       {selectedMember && (
         <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
@@ -87,7 +68,7 @@ export default function Team() {
         >
           <div
             className="bg-white rounded-xl max-w-lg w-full p-6 relative"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()} // bloque fermeture au clic dans modal
           >
             <button
               onClick={() => setSelectedMember(null)}
@@ -105,11 +86,6 @@ export default function Team() {
             <p className="text-orange-600 font-semibold mb-4">
               {selectedMember.position} #{selectedMember.number}
             </p>
-            {selectedMember.experience && (
-              <p className="text-gray-700 mb-4 whitespace-pre-line">
-                Expérience : {selectedMember.experience}
-              </p>
-            )}
             <p className="text-gray-700 whitespace-pre-line">
               {selectedMember.bio || "Pas encore de description."}
             </p>

@@ -14,6 +14,9 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+   .bg-white-transparent {
+    background-color: rgba(255, 255, 255, 0.589);
+  }
 }
 
 @layer base {
@@ -95,4 +98,5 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  
 }
