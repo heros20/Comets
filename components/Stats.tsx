@@ -7,7 +7,7 @@ export default function Stats() {
   const { data: stats, isLoading } = useSWR(
     "/api/stats",
     fetcher,
-    { refreshInterval: 60000 // 60 000 ms = 1 minute } //
+    { refreshInterval: 60000 } // ← toutes les 1 minute,
   );
 
   if (isLoading || !stats) return (
