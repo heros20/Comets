@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import BaseballBalle from "@/components/BaseballBalle";
 import BoutonAdmin from "@/components/BoutonAdmin";
 import HymneComets from "@/components/HymneComets";
+import { Suspense } from "react";
 
 export default function Home() {
   return (
@@ -15,7 +16,9 @@ export default function Home() {
       <Header />
       <BoutonAdmin />
       <BaseballBalle />
-      <Hero />
+      <Suspense>
+        <Hero />
+      </Suspense>
       <Stats />
       <Team />
       <Gallery />
