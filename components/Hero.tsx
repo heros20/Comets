@@ -1,15 +1,19 @@
 "use client";
 import { motion } from "framer-motion";
-import { Users, Calendar } from "lucide-react";
+import { Users, Calendar, CheckCircle, XCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import PopupPrenomStripe from "@/components/PopupPrenomStripe";
 
 export default function Hero() {
   const [showTraining, setShowTraining] = useState(false);
   const [showCotisation, setShowCotisation] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState<"success" | "error" | null>(null);
   const trainingRef = useRef<HTMLDivElement>(null);
+  const params = useSearchParams();
 
-  // Fermer la bulle si clic hors de celle-ci
+  // Gestion du clic hors bulle entraînements
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -22,6 +26,33 @@ export default function Hero() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Gestion des messages Stripe via l'URL et affichage popup
+  useEffect(() => {
+    const paymentSuccess = params.get("success");
+    const paymentCanceled = params.get("canceled");
+    if (paymentSuccess) {
+      setPopupType("success");
+      setShowPopup(true);
+    } else if (paymentCanceled) {
+      setPopupType("error");
+      setShowPopup(true);
+    }
+
+    // Nettoyage URL après popup
+    if ((paymentSuccess || paymentCanceled) && typeof window !== "undefined") {
+      const clean = () => {
+        const url = window.location.pathname;
+        window.history.replaceState({}, document.title, url);
+      };
+      const timeout = setTimeout(() => {
+        setShowPopup(false);
+        setPopupType(null);
+        clean();
+      }, 6000);
+      return () => clearTimeout(timeout);
+    }
+  }, [params]);
 
   return (
     <motion.section
@@ -102,6 +133,47 @@ export default function Hero() {
       {showCotisation && (
         <PopupPrenomStripe onClose={() => setShowCotisation(false)} />
       )}
+
+      {/* ------ POPUP MODALE PAIEMENT ------ */}
+      {showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full relative flex flex-col items-center border-2 border-orange-400 animate-fade-in">
+            {popupType === "success" ? (
+              <>
+                <CheckCircle className="w-14 h-14 text-green-600 mb-2" />
+                <div className="text-2xl font-bold text-green-800 mb-2">Paiement réussi !</div>
+                <div className="text-lg text-gray-700 mb-2">Bienvenue chez les Comets.</div>
+              </>
+            ) : (
+              <>
+                <svg className="w-14 h-14 text-red-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <div className="text-2xl font-bold text-red-800 mb-2">Erreur de paiement</div>
+                <div className="text-lg text-gray-700 mb-2">Ton paiement n&apos;a pas été validé.</div>
+              </>
+            )}
+            <button
+              className="absolute top-3 right-3 text-xl text-gray-500 hover:text-orange-500 font-bold"
+              onClick={() => setShowPopup(false)}
+              aria-label="Fermer"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Animation d'apparition (facultative) */}
+      <style jsx>{`
+        .animate-fade-in {
+          animation: fade-in 0.35s cubic-bezier(0.39, 0.575, 0.565, 1) both;
+        }
+        @keyframes fade-in {
+          0% { opacity: 0; transform: translateY(40px) scale(0.96);}
+          100% { opacity: 1; transform: translateY(0) scale(1);}
+        }
+      `}</style>
     </motion.section>
   );
 }
