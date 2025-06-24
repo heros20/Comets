@@ -1,7 +1,7 @@
 "use client";
 import useSWR from "swr";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -9,6 +9,8 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 export default function Gallery() {
   const { data: gallery, isLoading } = useSWR("/api/gallery", fetcher);
   const [modalImg, setModalImg] = useState<{ url: string; legend?: string } | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const galleryTitleRef = useRef<HTMLHeadingElement>(null);
 
   if (isLoading || !gallery)
     return (
@@ -17,17 +19,25 @@ export default function Gallery() {
       </section>
     );
 
+  // Découpe les images
+  const visibleImages = showAll ? gallery : gallery.slice(0, 4);
+
   return (
     <section id="galerie" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-red-700 mb-4">Galerie Photos</h2>
+          <h2
+            className="text-4xl md:text-5xl font-bold text-red-700 mb-4"
+            ref={galleryTitleRef}
+          >
+            Galerie Photos
+          </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Revivez nos meilleurs moments sur le terrain
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {gallery.map((img: any, idx: number) => (
+          {visibleImages.map((img: any, idx: number) => (
             <div
               key={img.id || idx}
               className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 group cursor-pointer"
@@ -59,6 +69,30 @@ export default function Gallery() {
             </div>
           ))}
         </div>
+
+        {/* Voir plus / Voir moins */}
+        {gallery.length > 4 && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => {
+                if (showAll && galleryTitleRef.current) {
+                  setShowAll(false);
+                  setTimeout(() => {
+                    galleryTitleRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }, 100);
+                } else {
+                  setShowAll(true);
+                }
+              }}
+              className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-lg font-bold px-8 py-3 rounded-full shadow transition"
+            >
+              {showAll ? "Voir moins" : "Voir plus"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* MODALE ANIMÉE */}

@@ -6,11 +6,12 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur shadow-lg transition-shadow">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {/* Logo baseball stylisé */}
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-orange-400 flex items-center justify-center">
-            <span className="text-3xl">⚾️</span>
-          </div>
+        <div className="flex items-center gap-4">
+          <img
+            src="/images/honfleurcomets.png"
+            alt="Logo Les Comets d'Honfleur"
+            className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl"
+          />
           <div>
             <h1 className="text-2xl font-extrabold text-red-700 tracking-wider uppercase">Les Comets</h1>
             <p className="text-xs text-orange-700 font-semibold -mt-1">d'Honfleur</p>

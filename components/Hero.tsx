@@ -2,9 +2,11 @@
 import { motion } from "framer-motion";
 import { Users, Calendar } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import PopupPrenomStripe from "@/components/PopupPrenomStripe";
 
 export default function Hero() {
   const [showTraining, setShowTraining] = useState(false);
+  const [showCotisation, setShowCotisation] = useState(false);
   const trainingRef = useRef<HTMLDivElement>(null);
 
   // Fermer la bulle si clic hors de celle-ci
@@ -68,7 +70,6 @@ export default function Hero() {
           <Users className="mr-2 h-5 w-5" />
           Nous Rejoindre
         </a>
-
         {/* Bouton "Voir les Entraînements" avec bulle horaires */}
         <div ref={trainingRef} className="relative inline-block">
           <button
@@ -88,7 +89,19 @@ export default function Hero() {
             </div>
           )}
         </div>
+        {/* ---- BOUTON STRIPE CHECKOUT ---- */}
+        <div className="relative inline-block">
+          <button
+            onClick={() => setShowCotisation(true)}
+            className="inline-flex items-center justify-center px-8 py-3 rounded-full border-2 border-white text-white hover:bg-white hover:text-red-600 text-lg font-bold shadow-md transition-transform hover:scale-105 cursor-pointer select-none"
+          >
+            Payer la cotisation
+          </button>
+        </div>
       </div>
+      {showCotisation && (
+        <PopupPrenomStripe onClose={() => setShowCotisation(false)} />
+      )}
     </motion.section>
   );
 }

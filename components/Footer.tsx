@@ -10,9 +10,8 @@ export default function Footer() {
             <img
               src="/images/honfleurcomets.png"
               alt="Logo Les Comets d'Honfleur"
-              className="w-10 h-10 object-contain"
+              className="w-30 h-20 object-contain"
             />
-            <h3 className="text-xl font-bold">Les Comets d'Honfleur</h3>
           </div>
           <p className="text-gray-400">
             Club de baseball passionné depuis 2005. Rejoignez-nous pour vivre l'aventure du baseball normand !

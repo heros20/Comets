@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Member = {
@@ -15,6 +15,8 @@ export default function Team() {
   const [teamMembers, setTeamMembers] = useState<Member[]>([]);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
+  const teamTitleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     fetch("/api/team")
@@ -26,18 +28,25 @@ export default function Team() {
       .catch(() => setLoading(false));
   }, []);
 
+  const visibleMembers = showAll ? teamMembers : teamMembers.slice(0, 3);
+
   if (loading) return <div className="text-center py-20">Chargement de l’équipe…</div>;
 
   return (
     <>
       <section id="equipe" className="py-20 bg-orange-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-red-700 mb-12 text-center">Notre Équipe</h2>
+          <h2
+            className="text-4xl font-bold text-red-700 mb-12 text-center"
+            ref={teamTitleRef}
+          >
+            Notre Équipe
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {teamMembers.length === 0 ? (
+            {visibleMembers.length === 0 ? (
               <p className="col-span-full text-center text-gray-500">Aucun membre trouvé.</p>
             ) : (
-              teamMembers.map((member, i) => (
+              visibleMembers.map((member, i) => (
                 <div
                   key={i}
                   className="cursor-pointer rounded-xl overflow-hidden shadow-lg border border-orange-300 hover:shadow-2xl transition"
@@ -58,10 +67,34 @@ export default function Team() {
               ))
             )}
           </div>
+          {/* --- Bouton Voir plus / Voir moins --- */}
+          {teamMembers.length > 3 && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={() => {
+                  if (showAll && teamTitleRef.current) {
+                    setShowAll(false);
+                    // Petit délai pour que la réduction de la grille soit effective
+                    setTimeout(() => {
+                      teamTitleRef.current?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                    }, 100);
+                  } else {
+                    setShowAll(true);
+                  }
+                }}
+                className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-lg font-bold px-8 py-3 rounded-full shadow transition"
+              >
+                {showAll ? "Voir moins" : "Voir plus"}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Modal fiche perso avec Framer Motion */}
+      {/* --- Modal fiche perso animée --- */}
       <AnimatePresence>
         {selectedMember && (
           <motion.div
