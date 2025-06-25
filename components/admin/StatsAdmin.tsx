@@ -1,4 +1,3 @@
-/*
 "use client";
 import { useState, useEffect } from "react";
 import { logAdminAction } from "@/utils/adminLog";
@@ -84,4 +83,3 @@ export default function StatsAdmin() {
     </form>
   );
 }
-*/
