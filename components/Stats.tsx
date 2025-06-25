@@ -1,53 +1,127 @@
 "use client";
 import useSWR from "swr";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+// --------- Animation ---------
+const tabAnim = {
+  initial: { opacity: 0, y: 20, scale: 0.98 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35 } },
+  exit: { opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.25 } },
+};
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function Stats() {
-  const { data: stats, isLoading } = useSWR(
-    "/api/stats",
-    fetcher,
-    { refreshInterval: 60000 } // ← toutes les 1 minute,
-  );
+  const { data, isLoading, error } = useSWR("/api/classement-normandie", fetcher, {
+    refreshInterval: 60000,
+  });
+  const [tabIdx, setTabIdx] = useState(0);
 
-  if (isLoading || !stats) return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4 text-center">Chargement…</div>
-    </section>
-  );
+  if (isLoading)
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 text-center">Chargement du classement…</div>
+      </section>
+    );
+
+  if (error || !data || !data.tabs)
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 text-center text-red-600">
+          Erreur de chargement du classement. (FFBS en maintenance ?)
+        </div>
+      </section>
+    );
+
+  const { tabs, standings, year } = data;
+
+  // Ligne d'entête avec colonne vide juste après le #
+  const staticColumns = [
+    "#","","","Equipe", "V", "D", "T", "PCT", "GB"
+  ];
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-white" id="classement">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl text-white font-bold">🏆</span>
-            </div>
-            <h3 className="text-3xl font-bold text-red-600 mb-2">{stats.victoires}</h3>
-            <p className="text-gray-600">Victoires cette saison</p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl text-white font-bold">👥</span>
-            </div>
-            <h3 className="text-3xl font-bold text-orange-600 mb-2">{stats.joueurs}</h3>
-            <p className="text-gray-600">Joueurs actifs</p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl text-white font-bold">🎯</span>
-            </div>
-            <h3 className="text-3xl font-bold text-yellow-600 mb-2">{stats.annees}</h3>
-            <p className="text-gray-600">Années d&apos;existence</p>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl text-white font-bold">📅</span>
-            </div>
-            <h3 className="text-3xl font-bold text-red-600 mb-2">{stats.entrainements}</h3>
-            <p className="text-gray-600">Entraînements par semaine</p>
-          </div>
+        <h2 className="text-3xl font-bold text-red-700 mb-8 text-center tracking-wider">
+          Championnat R1 Normandie <span className="text-orange-500">{year}</span>
+        </h2>
+        {/* Onglets */}
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
+          {tabs.map((tab: string, idx: number) => (
+            <button
+              key={tab}
+              onClick={() => setTabIdx(idx)}
+              className={`px-6 py-2 rounded-t-lg font-semibold transition-all duration-200
+                ${
+                  tabIdx === idx
+                    ? "bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-md scale-105"
+                    : "bg-orange-100 text-red-600 hover:bg-orange-200"
+                }
+              `}
+              aria-selected={tabIdx === idx}
+              aria-controls={`tab-panel-${idx}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        {/* Table animée */}
+        <div className="overflow-x-auto rounded-lg shadow bg-white p-1 min-h-[280px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tabIdx}
+              {...tabAnim}
+              className="w-full"
+              id={`tab-panel-${tabIdx}`}
+              role="tabpanel"
+              aria-labelledby={tabs[tabIdx]}
+            >
+              <table className="min-w-full bg-white border">
+                <thead>
+                  <tr className="bg-orange-100">
+                    {staticColumns.map((col, i) => (
+                      <th key={i} className="px-2 py-2 text-center font-semibold">{col}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {standings[tabIdx]?.map((row: string[], i: number) => (
+                    <tr
+                      key={i}
+                      className={`${
+                        i % 2 === 0 ? "bg-orange-50" : "bg-white"
+                      } hover:bg-orange-200/60 transition`}
+                    >
+                      {/* On affiche la première colonne (rang) */}
+                      <td className="px-2 py-2 text-center">{row[0]}</td>
+                      {/* Colonne vide pour le logo */}
+                      <td className="px-2 py-2"></td>
+                      {/* Ensuite toutes les autres valeurs, en décalant de 1 */}
+                      {row.slice(1).map((cell: string, j: number) => (
+                        <td key={j} className="px-2 py-2 text-center">{cell}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {(!standings[tabIdx] || standings[tabIdx].length === 0) && (
+                <div className="text-center py-8 text-orange-600">Aucune donnée pour cet onglet.</div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        <div className="text-center text-gray-400 mt-2 text-sm">
+          Source :{" "}
+          <a
+            className="underline hover:text-red-600"
+            href={`https://ffbs.wbsc.org/fr/events/${year}-championnat-r1-baseball-ligue-normandie/standings`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            FFBS officielle
+          </a>
         </div>
       </div>
     </section>
