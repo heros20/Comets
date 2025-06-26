@@ -1,43 +1,29 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import StatsAdmin from "@/components/admin/StatsAdmin";
 import TeamAdmin from "@/components/admin/TeamAdmin";
 import GalleryAdmin from "@/components/admin/GalleryAdmin";
 import MessagesAdmin from "@/components/admin/MessagesAdmin";
 import LogsAdmin from "@/components/admin/LogsAdmin";
-import { useRouter } from "next/navigation";
 import MessageNotifier from "@/components/admin/MessageNotifier";
+import { useRouter } from "next/navigation";
 
 const TAB_KEY = "admin_tab_comets";
 
 export default function Admin() {
   const [tab, setTab] = useState<string | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
-  // TOUS les hooks en haut, pas de condition ici !
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isAdmin = localStorage.getItem("admin_connected") === "1";
-      if (!isAdmin) {
-        router.replace("/admin/login");
-      } else {
-        setIsCheckingAuth(false);
-      }
-    }
-  }, [router]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(TAB_KEY);
-      if (
-        stored &&
-        ["stats", "team", "gallery", "messages", "logs"].includes(stored)
-      ) {
-        setTab(stored);
-      } else {
-        setTab("stats");
-      }
+    const stored = localStorage.getItem(TAB_KEY);
+    if (
+      stored &&
+      ["stats", "team", "gallery", "messages", "logs"].includes(stored)
+    ) {
+      setTab(stored);
+    } else {
+      setTab("stats");
     }
   }, []);
 
@@ -45,9 +31,14 @@ export default function Admin() {
     if (tab) localStorage.setItem(TAB_KEY, tab);
   }, [tab]);
 
-  // Maintenant, tu peux conditionner le rendu sans casser l’ordre
-  if (isCheckingAuth || !tab) {
-    return null; // ou loader, ça bloque l'affichage tant qu'on sait pas
+  // La déconnexion effacera le cookie à l’étape 3
+  const handleLogout = async () => {
+    await fetch("/api/admin/logout", { method: "POST" });
+    router.replace("/");
+  };
+
+  if (!tab) {
+    return null; // ou loader si tu veux
   }
 
   return (
@@ -55,11 +46,7 @@ export default function Admin() {
       <MessageNotifier />
       <div className="flex justify-end mb-2">
         <button
-          onClick={() => {
-            localStorage.removeItem("admin_connected");
-            localStorage.removeItem("admin_user");
-            window.location.href = "/";
-          }}
+          onClick={handleLogout}
           className="bg-orange-200 text-red-700 px-3 py-1 rounded shadow font-semibold hover:bg-orange-300 transition mr-2"
         >
           Déconnexion
@@ -77,7 +64,6 @@ export default function Admin() {
       </h1>
 
       <div className="flex justify-center mb-6 gap-3 flex-wrap">
-        {/* Onglets */}
         {["stats", "team", "gallery", "messages", "logs"].map((section) => (
           <button
             key={section}

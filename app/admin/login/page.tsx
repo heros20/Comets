@@ -14,19 +14,22 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    const found = USERS.find(
-      u => u.user === name.trim().toLowerCase() && u.pass === pass
-    );
-    if (found) {
-      localStorage.setItem("admin_connected", "1");
-      localStorage.setItem("admin_user", name.trim());
-      router.replace("/admin");
-    } else {
-      setError("Nom ou mot de passe incorrect !");
-    }
+async function handleLogin(e) {
+  e.preventDefault();
+  setError("");
+  const res = await fetch("/api/admin/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: name.trim().toLowerCase(), password: pass }),
+  });
+  if (res.ok) {
+    router.replace("/admin");
+  } else {
+    const out = await res.json();
+    setError(out.error || "Erreur serveur.");
   }
+}
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-100">

@@ -5,9 +5,12 @@ export default function BoutonAdmin() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("admin_connected") === "1") {
-      setIsAdmin(true);
-    }
+    fetch("/api/admin/check-session")
+      .then(res => res.json())
+      .then(data => {
+        setIsAdmin(data.isAdmin === true);
+      })
+      .catch(() => setIsAdmin(false));
   }, []);
 
   if (!isAdmin) return null;
