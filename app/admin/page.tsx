@@ -58,7 +58,7 @@ export default function Admin() {
           onClick={() => {
             localStorage.removeItem("admin_connected");
             localStorage.removeItem("admin_user");
-            window.location.href = "/admin/login";
+            window.location.href = "/";
           }}
           className="bg-orange-200 text-red-700 px-3 py-1 rounded shadow font-semibold hover:bg-orange-300 transition mr-2"
         >
