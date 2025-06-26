@@ -25,7 +25,7 @@ export default function LogsAdmin() {
             key={log.id ?? Math.random()}
             className="bg-orange-50 border border-orange-200 rounded px-4 py-2 text-sm"
           >
-            <span className="text-red-700 font-bold">{log.user || "Anonyme"}</span>
+            <span className="text-red-700 font-bold">{log.admin || "Anonyme"}</span>
             <span className="mx-2 text-gray-500">–</span>
             {log.action}
             <span className="ml-2 text-gray-500">({formatDate(log.created_at)})</span>

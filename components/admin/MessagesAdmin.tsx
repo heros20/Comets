@@ -20,12 +20,6 @@ export default function MessagesAdmin() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const lastCount = useRef(0);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [adminUser, setAdminUser] = useState<string>("Anonyme");
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("admin_user");
-    if (storedUser) setAdminUser(storedUser);
-  }, []);
 
   useEffect(() => {
     if (!messages || !Array.isArray(messages)) return;
@@ -54,7 +48,7 @@ export default function MessagesAdmin() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    await logAdminAction("Supprimé un message du formulaire de contact", adminUser);
+    await logAdminAction("Supprimé un message du formulaire de contact");
     setDeletingId(null);
     mutate();
   }

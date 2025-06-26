@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
   // On pose un cookie HTTPOnly qui va servir de session admin
   const response = NextResponse.json({ success: true });
-  response.cookies.set("admin_session", "ok", {
+    response.cookies.set("admin_session", data.username, {
     httpOnly: true,
     path: "/",
     secure: process.env.NODE_ENV === "production",
