@@ -1,8 +1,6 @@
 {
-  "cron": [
-    {
-      "path": "/api/admin/scrape",
-      "schedule": "0 2 * * *"
-    }
-  ]
+  "functions": {
+    "api/scrapeClassement.js": { "schedule": "0 2 * * *" },
+    "api/scrapeTeam.js": { "schedule": "0 2 * * *" }
+  }
 }
