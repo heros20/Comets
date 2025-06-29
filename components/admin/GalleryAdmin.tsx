@@ -94,6 +94,7 @@ export default function GalleryAdmin() {
   if (loading) return <div>Chargement...</div>;
 
   return (
+    
     <div>
       <h2 className="text-2xl font-bold text-red-700 mb-4">Gérer la galerie photo</h2>
       <form onSubmit={handleAdd} className="flex flex-col gap-3 mb-6">

@@ -235,7 +235,7 @@ export default function TeamPage() {
         </AnimatePresence>
       </div>
       <div className="text-center text-gray-400 mt-4 text-sm">
-        Données issues de la BDD Supabase – synchro automatique FFBS.
+        Données issues de la FFBS.
       </div>
     </div>
   );
