@@ -1,139 +1,242 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-type Member = {
-  name: string;
-  position: string;
-  number: number;
-  experience?: string;
-  image: string;
-  bio?: string;
+// --- Tes types (pas touché)
+type Player = {
+  id: number;
+  team_abbr: string;
+  last_name: string;
+  first_name: string;
+  yob?: string;
+  player_link?: string;
 };
 
-export default function Team() {
-  const [teamMembers, setTeamMembers] = useState<Member[]>([]);
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showAll, setShowAll] = useState(false);
-  const teamTitleRef = useRef<HTMLHeadingElement>(null);
+type Game = {
+  id: number;
+  team_abbr: string;
+  date: string;
+  isHome: boolean;
+  opponent: string;
+  opponentLogo?: string;
+  teamScore: number;
+  opponentScore: number;
+  result: string;
+  boxscore?: string;
+};
 
+const tabAnim = {
+  initial: { opacity: 0, y: 30, scale: 0.98 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4 } },
+  exit: { opacity: 0, y: -20, scale: 0.98, transition: { duration: 0.25 } },
+};
+
+export default function TeamPage() {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tabIdx, setTabIdx] = useState(0);
+
+  // --- FETCH Joueurs
   useEffect(() => {
-    fetch("/api/team")
-      .then(res => res.json())
-      .then(data => {
-        setTeamMembers(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    fetch("/api/players")
+      .then((res) => res.json())
+      .then((data) => setPlayers(Array.isArray(data) ? data : []))
+      .catch(() => setPlayers([]));
   }, []);
 
-  const visibleMembers = showAll ? teamMembers : teamMembers.slice(0, 3);
+  // --- FETCH Matchs
+  useEffect(() => {
+    fetch("/api/games")
+      .then((res) => res.json())
+      .then((data) => setGames(Array.isArray(data) ? data : []))
+      .catch(() => setGames([]))
+      .finally(() => setLoading(false));
+  }, []);
 
-  if (loading) return <div className="text-center py-20">Chargement de l’équipe…</div>;
+  if (loading)
+    return (
+      <div className="text-center py-20 text-xl text-orange-700">
+        Chargement des données…
+      </div>
+    );
+
+  const tabs = [
+    { label: "Joueurs", icon: "👥" },
+    { label: "Matchs", icon: "⚾️" },
+  ];
 
   return (
-    <>
-      <section id="equipe" className="py-20 bg-orange-50">
-        <div className="container mx-auto px-4">
-          <h2
-            className="text-4xl font-bold text-red-700 mb-12 text-center"
-            ref={teamTitleRef}
+    <div className="max-w-4xl mx-auto py-12 px-2 md:px-6">
+      {/* Titre */}
+      <h2 className="text-3xl font-bold text-red-700 mb-6 text-center tracking-wide">
+        Effectif & Résultats 2025
+      </h2>
+      {/* Onglets */}
+      <div className="flex justify-center gap-2 mb-4">
+        {tabs.map((tab, idx) => (
+          <button
+            key={tab.label}
+            onClick={() => setTabIdx(idx)}
+            className={`
+              px-6 py-2 rounded-t-lg font-semibold transition-all duration-200 flex items-center gap-2
+              ${
+                tabIdx === idx
+                  ? "bg-gradient-to-r from-red-600 to-orange-500 text-white shadow scale-105"
+                  : "bg-orange-100 text-red-600 hover:bg-orange-200"
+              }
+            `}
+            aria-selected={tabIdx === idx}
+            aria-controls={`tab-panel-${idx}`}
           >
-            Notre Équipe
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {visibleMembers.length === 0 ? (
-              <p className="col-span-full text-center text-gray-500">Aucun membre trouvé.</p>
-            ) : (
-              visibleMembers.map((member, i) => (
-                <div
-                  key={i}
-                  className="cursor-pointer rounded-xl overflow-hidden shadow-lg border border-orange-300 hover:shadow-2xl transition"
-                  onClick={() => setSelectedMember(member)}
-                >
-                  <img
-                    src={member.image || "/placeholder.svg"}
-                    alt={member.name}
-                    className="w-full h-72 object-cover rounded-t-xl"
-                  />
-                  <div className="p-4 bg-white">
-                    <h3 className="text-xl font-semibold text-red-700">
-                      {member.name} <span className="text-orange-600">#{member.number}</span>
-                    </h3>
-                    <p className="text-orange-700">{member.position}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-          {/* --- Bouton Voir plus / Voir moins --- */}
-          {teamMembers.length > 3 && (
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={() => {
-                  if (showAll && teamTitleRef.current) {
-                    setShowAll(false);
-                    // Petit délai pour que la réduction de la grille soit effective
-                    setTimeout(() => {
-                      teamTitleRef.current?.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start",
-                      });
-                    }, 100);
-                  } else {
-                    setShowAll(true);
-                  }
-                }}
-                className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-lg font-bold px-8 py-3 rounded-full shadow transition"
-              >
-                {showAll ? "Voir moins" : "Voir plus"}
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
+            <span className="text-xl">{tab.icon}</span> {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {/* --- Modal fiche perso animée --- */}
-      <AnimatePresence>
-        {selectedMember && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
-            onClick={() => setSelectedMember(null)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+      {/* Table animée */}
+      <div className="overflow-x-auto rounded-lg shadow bg-white p-2 min-h-[320px]">
+        <AnimatePresence mode="wait">
+          {tabIdx === 0 && (
             <motion.div
-              className="bg-white rounded-xl max-w-lg w-full p-6 relative"
-              onClick={e => e.stopPropagation()}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1, transition: { duration: 0.3, ease: "easeOut" } }}
-              exit={{ scale: 0.9, opacity: 0, transition: { duration: 0.2, ease: "easeIn" } }}
+              key="joueurs"
+              {...tabAnim}
+              className="w-full"
+              id="tab-panel-0"
+              role="tabpanel"
             >
-              <button
-                onClick={() => setSelectedMember(null)}
-                className="absolute top-4 right-4 text-red-600 font-bold text-xl"
-                aria-label="Fermer la fiche"
-              >
-                ×
-              </button>
-              <img
-                src={selectedMember.image || "/placeholder.svg"}
-                alt={selectedMember.name}
-                className="w-full h-64 object-cover rounded-lg mb-4"
-              />
-              <h2 className="text-3xl font-bold text-red-700 mb-2">{selectedMember.name}</h2>
-              <p className="text-orange-600 font-semibold mb-4">
-                {selectedMember.position} #{selectedMember.number}
-              </p>
-              <p className="text-gray-700 whitespace-pre-line">
-                {selectedMember.bio || "Pas encore de description."}
-              </p>
+              <table className="min-w-full border rounded-xl bg-white">
+                <thead>
+                  <tr className="bg-orange-100">
+                    <th className="p-3 border text-center font-semibold">Équipe</th>
+                    <th className="p-3 border text-center font-semibold">Nom</th>
+                    <th className="p-3 border text-center font-semibold">Année</th>
+                    <th className="p-3 border text-center font-semibold">Fiche FFBS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {players.length > 0 ? (
+                    players.map((p) => (
+                      <tr
+                        key={p.id}
+                        className="even:bg-orange-50 hover:bg-orange-200/70 transition"
+                      >
+                        <td className="p-3 border text-center">{p.team_abbr}</td>
+                        <td className="p-3 border font-semibold text-center">
+                          {p.first_name} {p.last_name}
+                        </td>
+                        <td className="p-3 border text-center">{p.yob || "-"}</td>
+                        <td className="p-3 border text-center">
+                          {p.player_link ? (
+                            <a
+                              href={p.player_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-orange-600 hover:underline font-bold"
+                            >
+                              Voir
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="text-center py-6 text-orange-600">
+                        Aucun joueur à afficher.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+          )}
+          {tabIdx === 1 && (
+            <motion.div
+              key="matchs"
+              {...tabAnim}
+              className="w-full"
+              id="tab-panel-1"
+              role="tabpanel"
+            >
+              <table className="min-w-full border rounded-xl bg-white">
+                <thead>
+                  <tr className="bg-orange-100">
+                    <th className="p-3 border text-center font-semibold">Numéro</th>
+                    <th className="p-3 border text-center font-semibold">Date</th>
+                    <th className="p-3 border text-center font-semibold">Domicile</th>
+                    <th className="p-3 border text-center font-semibold">Équipe</th>
+                    <th className="p-3 border text-center font-semibold">Adversaire</th>
+                    <th className="p-3 border text-center font-semibold">Score</th>
+                    <th className="p-3 border text-center font-semibold">Résultat</th>
+                    <th className="p-3 border text-center font-semibold">Boxscore</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {games.length > 0 ? (
+                    games.map((g) => (
+                      <tr
+                        key={g.id}
+                        className="even:bg-orange-50 hover:bg-orange-200/70 transition"
+                      >
+                        <td className="p-3 border text-center">{g.gameNumber}</td>
+                        <td className="p-3 border text-center">{g.date}</td>
+                        <td className="p-3 border text-center">{g.isHome ? "Oui" : "Non"}</td>
+                        <td className="p-3 border text-center">HON</td>
+                        <td className="p-3 border text-center flex items-center gap-2">
+                          {g.opponentLogo && (
+                            <img
+                              src={g.opponentLogo}
+                              alt={g.opponent}
+                              className="inline-block w-6 h-6 mr-2"
+                            />
+                          )}
+                          {g.opponent}
+                        </td>
+                        <td className="p-3 border text-center">
+                          {g.teamScore} - {g.opponentScore}
+                        </td>
+                        <td className="p-3 border text-center">
+                          {g.result === "W"
+                            ? "Victoire"
+                            : g.result === "L"
+                            ? "Défaite"
+                            : "Nul"}
+                        </td>
+                        <td className="p-3 border text-center">
+                          {g.boxscore ? (
+                            <a
+                              href={g.boxscore}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-orange-600 hover:underline font-bold"
+                            >
+                              Voir
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="text-center py-6 text-orange-600">
+                        Aucun match à afficher.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      <div className="text-center text-gray-400 mt-4 text-sm">
+        Données issues de la BDD Supabase – synchro automatique FFBS.
+      </div>
+    </div>
   );
 }

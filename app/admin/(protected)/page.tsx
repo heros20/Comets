@@ -15,6 +15,27 @@ export default function Admin() {
   const [tab, setTab] = useState<string | null>(null);
   const router = useRouter();
 
+  // ---- ETATS SCRAPE ----
+  const [scrapeLoading, setScrapeLoading] = useState(false);
+  const [scrapeResult, setScrapeResult] = useState<{team?: any, classement?: any} | null>(null);
+
+  const handleScrape = async () => {
+    setScrapeLoading(true);
+    setScrapeResult(null);
+    try {
+      const res = await fetch("/api/admin/scrape", { method: "POST" });
+      const data = await res.json();
+      setScrapeResult(data);
+    } catch (e: any) {
+      setScrapeResult({
+        team: { ok: false, error: e.message },
+        classement: { ok: false, error: e.message }
+      });
+    } finally {
+      setScrapeLoading(false);
+    }
+  };
+
   useEffect(() => {
     const stored = localStorage.getItem(TAB_KEY);
     if (
@@ -62,6 +83,36 @@ export default function Admin() {
       <h1 className="text-4xl font-extrabold text-red-700 mb-8 text-center drop-shadow-sm">
         Tableau de bord - Administration
       </h1>
+
+      {/* --- Bouton de mise à jour --- */}
+      <div className="flex justify-center mb-6">
+        <button
+          onClick={handleScrape}
+          disabled={scrapeLoading}
+          className={`flex items-center gap-2 px-5 py-2 rounded-full font-bold shadow transition
+            ${
+              scrapeLoading
+                ? "bg-orange-200 text-orange-700 cursor-not-allowed"
+                : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
+            }
+          `}
+        >
+          <svg className={`w-5 h-5 ${scrapeLoading ? "animate-spin" : ""}`} viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 2v2a8 8 0 1 1-8 8H2A10 10 0 1 0 12 2z"/>
+          </svg>
+          {scrapeLoading ? "Mise à jour en cours..." : "Mettre à jour les données"}
+        </button>
+      </div>
+      {scrapeResult && (
+        <div className="text-center mb-4 space-y-1">
+          <div className={scrapeResult.team?.ok ? "text-green-700" : "text-red-700"}>
+            <b>Team</b> : {scrapeResult.team?.ok ? "OK ✅" : `Erreur ❌ : ${scrapeResult.team?.error || "Inconnue"}`}
+          </div>
+          <div className={scrapeResult.classement?.ok ? "text-green-700" : "text-red-700"}>
+            <b>Classement</b> : {scrapeResult.classement?.ok ? "OK ✅" : `Erreur ❌ : ${scrapeResult.classement?.error || "Inconnue"}`}
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-center mb-6 gap-3 flex-wrap">
         {["stats", "team", "gallery", "messages", "logs"].map((section) => (
