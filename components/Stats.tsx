@@ -10,11 +10,11 @@ const tabAnim = {
   exit: { opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.25 } },
 };
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = (url) => fetch(url).then(res => res.json());
 
 export default function Stats() {
   const { data, isLoading, error } = useSWR("/api/classement-normandie", fetcher, {
-    refreshInterval: 60000,
+    // refreshInterval: 60000, // Désactivé car on stocke désormais en BDD
   });
   const [tabIdx, setTabIdx] = useState(0);
 
@@ -38,7 +38,7 @@ export default function Stats() {
 
   // Ligne d'entête avec colonne vide juste après le #
   const staticColumns = [
-    "#","","","Equipe", "V", "D", "T", "PCT", "GB"
+    "#", "Logo", "Abbr", "Equipe", "V", "D", "T", "PCT", "GB"
   ];
 
   return (
@@ -49,7 +49,7 @@ export default function Stats() {
         </h2>
         {/* Onglets */}
         <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {tabs.map((tab: string, idx: number) => (
+          {tabs.map((tab, idx) => (
             <button
               key={tab}
               onClick={() => setTabIdx(idx)}
@@ -87,28 +87,61 @@ export default function Stats() {
                   </tr>
                 </thead>
                 <tbody>
-                  {standings[tabIdx]?.map((row: string[], i: number) => (
-                    <tr
-                      key={i}
-                      className={`${
-                        i % 2 === 0 ? "bg-orange-50" : "bg-white"
-                      } hover:bg-orange-200/60 transition`}
-                    >
-                      {/* On affiche la première colonne (rang) */}
-                      <td className="px-2 py-2 text-center">{row[0]}</td>
-                      {/* Colonne vide pour le logo */}
-                      <td className="px-2 py-2"></td>
-                      {/* Ensuite toutes les autres valeurs, en décalant de 1 */}
-                      {row.slice(1).map((cell: string, j: number) => (
-                        <td key={j} className="px-2 py-2 text-center">{cell}</td>
-                      ))}
+                  {standings[tabIdx]?.length > 0 ? (
+                    standings[tabIdx].map((row, i) => (
+                      <tr
+                        key={i}
+                        className={`${
+                          i % 2 === 0 ? "bg-orange-50" : "bg-white"
+                        } hover:bg-orange-200/60 transition`}
+                      >
+                        {/* Rang */}
+                        <td className="px-2 py-2 text-center font-bold">{row.rank}</td>
+                        {/* Logo équipe */}
+                        <td className="px-2 py-2 text-center">
+                          {row.logo ? (
+                            <img
+                              src={row.logo}
+                              alt={row.abbreviation}
+                              className="h-8 mx-auto rounded shadow"
+                              loading="lazy"
+                            />
+                          ) : null}
+                        </td>
+                        {/* Abréviation */}
+                        <td className="px-2 py-2 text-center">{row.abbreviation}</td>
+                        {/* Nom équipe (cliquable) */}
+                        <td className="px-2 py-2">
+                          {row.team_url ? (
+                            <a
+                              href={row.team_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:text-orange-500 font-semibold"
+                            >
+                              {row.name}
+                            </a>
+                          ) : (
+                            row.name
+                          )}
+                        </td>
+                        {/* V, D, T, PCT, GB */}
+                        <td className="px-2 py-2 text-center">{row.W}</td>
+                        <td className="px-2 py-2 text-center">{row.L}</td>
+                        <td className="px-2 py-2 text-center">{row.T}</td>
+                        <td className="px-2 py-2 text-center">{row.PCT}</td>
+                        <td className="px-2 py-2 text-center">{row.GB}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={staticColumns.length} className="text-center py-8 text-orange-600">
+                        Aucune donnée pour cet onglet.
+                      </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
-              {(!standings[tabIdx] || standings[tabIdx].length === 0) && (
-                <div className="text-center py-8 text-orange-600">Aucune donnée pour cet onglet.</div>
-              )}
             </motion.div>
           </AnimatePresence>
         </div>
