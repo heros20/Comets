@@ -1,22 +1,22 @@
 {
+  "functions": {
+    "app/api/scrapeClassement.js": {
+      "memory": 256,
+      "maxDuration": 10
+    },
+    "app/api/scrapeTeam.js": {
+      "memory": 256,
+      "maxDuration": 10
+    }
+  },
   "crons": [
     {
-      "path": "/app/api/scrapeClassement",
+      "path": "/api/scrapeClassement",
       "schedule": "0 2 * * *"
     },
     {
-      "path": "/app/api/scrapeTeam",
+      "path": "/api/scrapeTeam",
       "schedule": "0 2 * * *"
     }
-  ],
-  "functions": {
-    "/app/api/scrapeClassement.js": {
-      "memory": 256,
-      "maxDuration": 10
-    },
-    "/app/api/scrapeTeam.js": {
-      "memory": 256,
-      "maxDuration": 10
-    }
-  }
+  ]
 }
