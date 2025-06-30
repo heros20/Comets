@@ -103,16 +103,29 @@ export default function Admin() {
           {scrapeLoading ? "Mise à jour en cours..." : "Mettre à jour les données"}
         </button>
       </div>
-      {scrapeResult && (
-        <div className="text-center mb-4 space-y-1">
-          <div className={scrapeResult.team?.ok ? "text-green-700" : "text-red-700"}>
-            <b>Team</b> : {scrapeResult.team?.ok ? "OK ✅" : `Erreur ❌ : ${scrapeResult.team?.error || "Inconnue"}`}
-          </div>
-          <div className={scrapeResult.classement?.ok ? "text-green-700" : "text-red-700"}>
-            <b>Classement</b> : {scrapeResult.classement?.ok ? "OK ✅" : `Erreur ❌ : ${scrapeResult.classement?.error || "Inconnue"}`}
-          </div>
+        {scrapeResult && (
+  <div className="text-center mb-4 space-y-1">
+    {scrapeResult.error ? (
+      <div className="text-red-700 font-bold">
+        Erreur ❌ : {scrapeResult.error}
+      </div>
+    ) : (
+      <>
+        <div className="text-green-700 font-bold">
+          {scrapeResult.message || "Mise à jour réussie !"}
         </div>
-      )}
+        {scrapeResult.details && (
+          <div className="text-gray-700 text-sm mt-2">
+            Joueurs mis à jour : {scrapeResult.details.teamsUpdated}<br />
+            Matchs mis à jour : {scrapeResult.details.gamesUpdated}
+          </div>
+        )}
+      </>
+    )}
+  </div>
+)}
+
+
 
       <div className="flex justify-center mb-6 gap-3 flex-wrap">
         {/* "stats", "team", "gallery", "messages", "logs"*/}

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
-import cheerio from "cheerio";
+import { load } from "cheerio";
 import { createClient } from "@supabase/supabase-js";
 
+// ----------- LOG ENV -----------
+console.log("[scrape] FICHIER ROUTE.TS CHARGÉ !");
+console.log("[scrape] SUPABASE_URL:", process.env.SUPABASE_URL);
+console.log("[scrape] SUPABASE_SERVICE_ROLE_KEY (first 10):", process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10));
+
+// ----------- INIT -----------
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -13,18 +19,29 @@ const TEAM_ABBR = "HON";
 
 // Fonction scraping classement
 async function fetchAndParseClassement() {
+  console.log("[scrape] Fetching classement...");
   const res = await fetch(CLASSEMENT_URL, {
     headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "text/html",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+      "Accept":
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+      "Referer": "https://ffbs.wbsc.org/",
     },
   });
-  if (!res.ok) throw new Error("Erreur fetch classement FFBS");
+  console.log("[scrape] Status classement fetch:", res.status);
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("[scrape] Erreur HTTP fetch classement FFBS :", res.status, errText.slice(0, 200));
+    throw new Error("Erreur fetch classement FFBS. Status: " + res.status);
+  }
   const html = await res.text();
-  const $ = cheerio.load(html);
+  const $ = load(html);
 
   const tabs: string[] = [];
   $("ul.nav-tabs li a").each((i, el) => tabs.push($(el).text().trim()));
+  console.log("[scrape] Tabs trouvés:", tabs);
 
   const standings = [];
   $(".tab-content .tab-pane").each((i, tabPane) => {
@@ -55,29 +72,46 @@ async function fetchAndParseClassement() {
   });
 
   const year = $("title").text().match(/\d{4}/)?.[0] || "2025";
+  console.log("[scrape] Year:", year);
+  console.log("[scrape] Standings length:", standings.length);
 
   return { tabs, standings, year };
 }
 
 // Sauvegarde classement dans Supabase
 async function saveClassementToSupabase(data: any) {
-  // Nettoyer l'ancienne table avant insertion (optionnel)
+  console.log("[scrape] Suppression ancienne table classement_normandie...");
   await supabase.from("classement_normandie").delete().neq('id', 0);
+  console.log("[scrape] Insertion du nouveau classement...");
   const { error } = await supabase.from("classement_normandie").insert([{ data }]);
-  if (error) throw error;
+  if (error) {
+    console.error("[scrape] ERREUR insert classement:", error);
+    throw error;
+  }
+  console.log("[scrape] Insertion OK");
 }
 
 // Fonction scraping équipe + matchs
 async function fetchAndParseTeamPage() {
+  console.log("[scrape] Fetching équipe...");
   const res = await fetch(TEAM_URL, {
     headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "text/html",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+      "Accept":
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+      "Referer": "https://ffbs.wbsc.org/",
     },
   });
-  if (!res.ok) throw new Error("Erreur fetch équipe FFBS");
+  console.log("[scrape] Status team fetch:", res.status);
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("[scrape] Erreur HTTP fetch équipe FFBS :", res.status, errText.slice(0, 200));
+    throw new Error("Erreur fetch équipe FFBS. Status: " + res.status);
+  }
   const html = await res.text();
-  const $ = cheerio.load(html);
+  const $ = load(html);
 
   const roster = [];
   $('h3:contains("Roster")').next("table").find("tbody tr").each((i, row) => {
@@ -108,6 +142,7 @@ async function fetchAndParseTeamPage() {
       });
     }
   });
+  console.log("[scrape] Roster length:", roster.length);
 
   const games = [];
   $('.box-container:has(h3:contains("Rencontres")) .game-row').each((i, gameRow) => {
@@ -160,26 +195,47 @@ async function fetchAndParseTeamPage() {
       team_abbr: TEAM_ABBR
     });
   });
+  console.log("[scrape] Games length:", games.length);
 
   if (roster.length) {
+    console.log("[scrape] Insertion roster...");
     const { error } = await supabase.from('players').upsert(roster, { onConflict: ['player_link'] });
-    if (error) throw new Error("Erreur insertion joueurs : " + error.message);
+    if (error) {
+      console.error("[scrape] ERREUR insert joueurs:", error.message);
+      throw new Error("Erreur insertion joueurs : " + error.message);
+    }
+    console.log("[scrape] Joueurs insérés.");
   }
   if (games.length) {
+    console.log("[scrape] Insertion games...");
     const { error } = await supabase.from('games').upsert(games, { onConflict: ['team_abbr', 'game_number'] });
-    if (error) throw new Error("Erreur insertion matchs : " + error.message);
+    if (error) {
+      console.error("[scrape] ERREUR insert games:", error.message);
+      throw new Error("Erreur insertion matchs : " + error.message);
+    }
+    console.log("[scrape] Games insérés.");
   }
 
   return { rosterCount: roster.length, gamesCount: games.length };
 }
 
-export async function POST() {
+export async function POST(req: Request) {
+  console.log("[scrape] ======= APPEL DE LA ROUTE /api/admin/scrape =======");
+  // Si jamais tu veux voir le body du POST, décommente :
+  // const body = await req.text(); console.log("[scrape] Body:", body);
+
   try {
+    console.log("[scrape] DÉBUT DU SCRAPE");
     const classement = await fetchAndParseClassement();
+    console.log("[scrape] Classement récupéré:", classement);
+
     await saveClassementToSupabase(classement);
+    console.log("[scrape] Classement inséré en BDD");
 
     const teamResult = await fetchAndParseTeamPage();
+    console.log("[scrape] Team page traitée:", teamResult);
 
+    console.log("[scrape] FIN OK");
     return NextResponse.json({
       message: `Classement et équipe mis à jour ✅`,
       details: {
@@ -188,7 +244,10 @@ export async function POST() {
       },
     });
   } catch (err: any) {
-    console.error("[scrape] error:", err);
-    return NextResponse.json({ error: err.message || "Erreur serveur" }, { status: 500 });
+    console.error("[scrape] ERROR CAUGHT:", err, err?.stack);
+    return NextResponse.json(
+      { error: err.message || JSON.stringify(err) || "Erreur serveur", stack: err?.stack },
+      { status: 500 }
+    );
   }
 }

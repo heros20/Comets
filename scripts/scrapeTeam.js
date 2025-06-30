@@ -3,8 +3,15 @@
 // ----------- DEPENDANCES -----------
 const cheerio = require("cheerio");
 require("dotenv").config({ path: './.env' });
-const fetch = global.fetch || require("node-fetch");
 const { createClient } = require('@supabase/supabase-js');
+
+// ----------- INIT FETCH (compatible Node <18) -----------
+let fetchFn;
+try {
+  fetchFn = fetch; // natif (Node 18+)
+} catch (e) {
+  fetchFn = require("node-fetch");
+}
 
 // ----------- SUPABASE INIT -----------
 const supabaseKey =
@@ -14,7 +21,6 @@ const supabaseKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(process.env.SUPABASE_URL, supabaseKey);
 
-
 // ----------- VARIABLES -----------
 const URL = "https://ffbs.wbsc.org/fr/events/2025-championnat-r1-baseball-ligue-normandie/teams/34745";
 const TEAM_ABBR = "HON"; // Change si tu scrap d'autres teams
@@ -22,14 +28,33 @@ const TEAM_ABBR = "HON"; // Change si tu scrap d'autres teams
 // ----------- SCRAP TEAM FUNCTION -----------
 async function fetchAndParseTeamPage() {
   console.log("Tentative de fetch de la page d’équipe FFBS...");
-  const res = await fetch(URL, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-    }
-  });
+
+  // Headers qui sentent bon le browser
+  const headers = {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept":
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Referer": "https://ffbs.wbsc.org/",
+    // Ajoute ici Cookie si tu veux vraiment ruser
+  };
+
+  let res;
+  try {
+    res = await fetchFn(URL, { headers });
+  } catch (err) {
+    console.error("Erreur de fetch :", err);
+    throw err;
+  }
+
   console.log("Status fetch FFBS :", res.status);
-  if (!res.ok) throw new Error("Impossible de récupérer la page FFBS.");
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("Erreur HTTP :", res.status, errText.slice(0, 200));
+    throw new Error("Impossible de récupérer la page FFBS. Statut " + res.status);
+  }
+
   const html = await res.text();
 
   // Charger le HTML dans Cheerio
@@ -48,8 +73,7 @@ async function fetchAndParseTeamPage() {
       const $playerCell = $(cols[1]);
       const playerLink = $playerCell.find("a").attr("href") || null;
       const lastName = $playerCell.find("strong").text().trim();
-      let firstName = $playerCell.text().replace(lastName, "").trim();
-      firstName = firstName.replace(/\s+/g, " ");
+      let firstName = $playerCell.text().replace(lastName, "").trim().replace(/\s+/g, " ");
 
       const pos = $(cols[2]).text().trim();
       const bt = $(cols[3]).text().trim();
@@ -71,7 +95,7 @@ async function fetchAndParseTeamPage() {
       });
     }
   });
-  console.log("Roster extrait :", roster);
+  console.log("Roster extrait :", roster.length, "joueurs");
 
   // ----------- EXTRACTION DES MATCHS -----------
   const games = [];
@@ -130,7 +154,7 @@ async function fetchAndParseTeamPage() {
       team_abbr: TEAM_ABBR
     });
   });
-  console.log("Matchs extraits :", games);
+  console.log("Matchs extraits :", games.length);
 
   // ----------- INSERTION DANS LA BDD -----------
   if (roster.length) {
@@ -140,7 +164,7 @@ async function fetchAndParseTeamPage() {
     if (error) {
       console.error("Erreur insertion joueurs :", error.message);
     } else {
-      console.log("Joueurs insérés/à jour !");
+      console.log("Joueurs insérés/à jour !");
     }
   }
   if (games.length) {
@@ -150,11 +174,19 @@ async function fetchAndParseTeamPage() {
     if (error) {
       console.error("Erreur insertion matchs :", error.message);
     } else {
-      console.log("Matchs insérés/à jour !");
+      console.log("Matchs insérés/à jour !");
     }
   }
   return { teamName, roster, games };
 }
 
 // ----------- LANCE LE SCRIPT -----------
-fetchAndParseTeamPage().catch(err => console.error("Erreur :", err.message));
+fetchAndParseTeamPage()
+  .then((res) => {
+    console.log("✅ Données d'équipe sauvegardées avec succès !");
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error("❌ Erreur lors du scrap ou de l’insertion :", err.message || err);
+    process.exit(1);
+  });

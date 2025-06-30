@@ -3,7 +3,7 @@
 // ----------- DEPENDANCES -----------
 const cheerio = require("cheerio");
 const { createClient } = require("@supabase/supabase-js");
-require("dotenv").config({ path: './.env' }); // Force le .env à la racine
+require("dotenv").config({ path: './.env' });
 
 // ----------- VARIABLES ENVIRONNEMENT -----------
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -25,14 +25,37 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 // ----------- FONCTION DE SCRAP -----------
 async function fetchAndParseClassement() {
   console.log("Tentative de fetch de la page FFBS...");
-  const res = await fetch(URL, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-    }
-  });
+
+  // --------- HEADERS ULTRA-HUMAINS ---------
+  const headers = {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept":
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Referer": "https://ffbs.wbsc.org/",
+    // Ajoute ici "Cookie" si tu veux tester avec ta session navigateur
+  };
+
+  // --------- FETCH ---------
+  let res;
+  try {
+    res = await fetch(URL, { headers });
+  } catch (err) {
+    // Node.js <18: utilise node-fetch
+    console.warn("fetch natif indisponible, tentative avec node-fetch...");
+    const nodeFetch = require("node-fetch");
+    res = await nodeFetch(URL, { headers });
+  }
+
   console.log("Status fetch FFBS :", res.status);
-  if (!res.ok) throw new Error("Impossible de récupérer la page FFBS.");
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("Erreur HTTP :", res.status, errText.slice(0, 200));
+    throw new Error("Impossible de récupérer la page FFBS. Statut " + res.status);
+  }
+
   const html = await res.text();
 
   // 2. Charger avec cheerio
@@ -43,6 +66,7 @@ async function fetchAndParseClassement() {
   $("ul.nav-tabs li a").each((i, el) => {
     tabs.push($(el).text().trim());
   });
+  console.log("Onglets trouvés :", tabs);
 
   // 4. Récupérer chaque tableau (1 par onglet)
   const standings = [];
@@ -76,9 +100,11 @@ async function fetchAndParseClassement() {
       });
     standings.push(tabRows);
   });
+  console.log("Nombre de tableaux récupérés :", standings.length);
 
   // 5. Année depuis le titre
   const year = $("title").text().match(/\d{4}/)?.[0] || "2025";
+  console.log("Année détectée :", year);
 
   return { tabs, standings, year };
 }
