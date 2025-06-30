@@ -115,7 +115,8 @@ export default function Admin() {
       )}
 
       <div className="flex justify-center mb-6 gap-3 flex-wrap">
-        {["stats", "team", "gallery", "messages", "logs"].map((section) => (
+        {/* "stats", "team", "gallery", "messages", "logs"*/}
+        {["gallery", "messages", "logs"].map((section) => (
           <button
             key={section}
             onClick={() => setTab(section)}
@@ -130,13 +131,14 @@ export default function Admin() {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl p-6 max-w-3xl mx-auto">
-        {tab === "stats" && <StatsAdmin />}
-        {tab === "team" && <TeamAdmin />}
-        {tab === "gallery" && <GalleryAdmin />}
-        {tab === "messages" && <MessagesAdmin />}
-        {tab === "logs" && <LogsAdmin />}
-      </div>
+    <div className="bg-white rounded-2xl shadow-xl p-6 max-w-3xl mx-auto">
+  {/* {tab === "stats" && <StatsAdmin />} */}
+  {/* {tab === "team" && <TeamAdmin />} */}
+  {tab === "gallery" && <GalleryAdmin />}
+  {tab === "messages" && <MessagesAdmin />}
+  {tab === "logs" && <LogsAdmin />}
+</div>
+
     </div>
   );
 }
