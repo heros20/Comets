@@ -21,7 +21,6 @@ jobs:
       - name: Install only scraping deps
         run: npm install cheerio @supabase/supabase-js node-fetch --force
 
-      
       - name: Run classement scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -33,3 +32,19 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/scrapeTeam.js
+
+      - name: Discord notification
+        if: always()  # s’exécute même si ça plante avant
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [ "$JOB_STATUS" = "success" ]; then
+            MESSAGE="✅ Scrape Comets terminé avec succès !"
+          else
+            MESSAGE="❌ Scrape Comets échoué !"
+          fi
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"$MESSAGE\"}" \
+               $DISCORD_WEBHOOK_URL
