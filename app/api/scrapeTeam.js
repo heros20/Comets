@@ -13,6 +13,6 @@ export default async function handler(req, res) {
       console.error(`stderr: ${stderr}`);
     }
     console.log(`stdout: ${stdout}`);
-    res.status(200).json({ message: 'ScrapeTeam lancé', output: stdout });
+    res.status(200).json({ message: 'scrapeTeam lancé', output: stdout });
   });
 }
