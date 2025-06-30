@@ -1,11 +1,10 @@
-// app/api/scrapeClassement.js (handler)
-import { scrapeClassement } from '../../scripts/2scrapeClassement';
+import { scrapeClassement } from "../../lib/scrapeTeam";
 
 export default async function handler(req, res) {
   try {
     const result = await scrapeClassement();
-    res.status(200).json({ message: "Scrape classement OK", data: result });
-  } catch (err) {
-    res.status(500).json({ error: err.message || err.toString() });
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
