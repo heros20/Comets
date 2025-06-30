@@ -10,11 +10,11 @@
     }
   ],
   "functions": {
-    "/appapi/scrapeClassement.js": {
+    "/app/api/scrapeClassement.js": {
       "memory": 256,
       "maxDuration": 10
     },
-    "/appapi/scrapeTeam.js": {
+    "/app/api/scrapeTeam.js": {
       "memory": 256,
       "maxDuration": 10
     }
