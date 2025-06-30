@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import path from 'path';
 
 export async function GET(request) {
-  const scriptPath = path.resolve('./scripts/scrapeClassement.js');
+  const scriptPath = path.resolve('./scripts/2scrapeClassement.js');
 
   return new Promise((resolve) => {
     exec(`node ${scriptPath}`, (error, stdout, stderr) => {
