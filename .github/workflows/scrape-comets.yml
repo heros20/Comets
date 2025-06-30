@@ -1,0 +1,34 @@
+name: Scrape & Update Supabase
+
+on:
+  schedule:
+    - cron: '0 5 * * *' # tous les jours à 5h du matin UTC (modifie si tu veux)
+  workflow_dispatch: # permet de lancer manuellement
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # ou ta version préférée
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run classement scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/scrapeClassement.js
+
+      - name: Run team scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/scrapeTeam.js
