@@ -13,6 +13,7 @@ import { Suspense } from "react";
 export default function Home() {
   return (
     <>
+    <div className="min-h-screen bg-white/40 ">
       <Header />
       <BoutonAdmin />
       <BaseballBalle />
@@ -25,6 +26,7 @@ export default function Home() {
       <Contact />
       <HymneComets />
       <Footer />
+    </div>
     </>
   );
 }

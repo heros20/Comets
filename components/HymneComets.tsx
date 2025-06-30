@@ -1,9 +1,11 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function HymneComets() {
+export default function HymneCometsAccordion() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -26,6 +28,16 @@ export default function HymneComets() {
       audio.removeEventListener("ended", () => setIsPlaying(false));
     };
   }, []);
+
+  useEffect(() => {
+    // Pause la musique si on ferme l'onglet
+    if (!isOpen && isPlaying) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+    }
+  }, [isOpen, isPlaying]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -61,72 +73,94 @@ export default function HymneComets() {
   };
 
   return (
-    <section className="w-full py-12 bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 rounded-xl text-white text-center shadow-lg">
-      <div className="max-w-xl mx-auto px-4">
-        <h2 className="text-3xl font-extrabold mb-4">Hymne des Comets</h2>
-        <audio ref={audioRef} src="/sounds/hymne-comets.mp3" preload="auto" />
-        <button
-          onClick={togglePlay}
-          className="inline-flex items-center gap-3 bg-white text-red-600 font-bold px-6 py-3 rounded-full shadow-md hover:bg-red-100 transition"
-          aria-label={isPlaying ? "Pause l'hymne" : "Jouer l'hymne"}
-        >
-          {isPlaying ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <rect x="6" y="4" width="4" height="16" />
-              <rect x="14" y="4" width="4" height="16" />
-            </svg>
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          )}
-          {isPlaying ? "Pause" : "Jouer"}
-        </button>
-        <div
-          ref={progressBarRef}
-          onClick={handleProgressClick}
-          className="mt-4 h-2 bg-white bg-opacity-40 rounded-full overflow-hidden cursor-pointer"
-          aria-label="Barre de progression"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-        >
-          <div
-            className="h-full bg-yellow-300 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        {/* Slider volume */}
-        <div className="mt-4 flex items-center justify-center gap-2">
-          <label htmlFor="volume" className="text-white font-semibold">
-            Volume
-          </label>
-          <input
-            id="volume"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={handleVolumeChange}
-            className="w-full cursor-pointer"
-            aria-label="Contrôle du volume"
-          />
-        </div>
-      </div>
-    </section>
+    <div className="max-w-xl mx-auto mt-8">
+      <button
+        onClick={() => setIsOpen((o) => !o)}
+        className="flex items-center gap-3 px-5 py-3 rounded-lg bg-orange-100 text-red-700 font-bold shadow hover:bg-orange-200 transition w-full justify-center"
+        aria-expanded={isOpen}
+        aria-controls="comets-hymne-panel"
+      >
+        <span className="text-2xl">🎶</span>
+        {isOpen ? "Fermer l’hymne des Comets" : "Ouvrir l’hymne des Comets"}
+      </button>
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.section
+            id="comets-hymne-panel"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1, transition: { duration: 0.4, ease: "easeInOut" } }}
+            exit={{ height: 0, opacity: 0, transition: { duration: 0.25 } }}
+            className="overflow-hidden bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 rounded-xl text-white text-center shadow-lg mt-4"
+          >
+            <div className="px-6 py-8">
+              <h2 className="text-3xl font-extrabold mb-4">Hymne des Comets</h2>
+              <audio ref={audioRef} src="/sounds/hymne-comets.mp3" preload="auto" />
+              <button
+                onClick={togglePlay}
+                className="inline-flex items-center gap-3 bg-white text-red-600 font-bold px-6 py-3 rounded-full shadow-md hover:bg-red-100 transition"
+                aria-label={isPlaying ? "Pause l'hymne" : "Jouer l'hymne"}
+              >
+                {isPlaying ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <rect x="6" y="4" width="4" height="16" />
+                    <rect x="14" y="4" width="4" height="16" />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+                {isPlaying ? "Pause" : "Jouer"}
+              </button>
+              <div
+                ref={progressBarRef}
+                onClick={handleProgressClick}
+                className="mt-4 h-2 bg-white bg-opacity-40 rounded-full overflow-hidden cursor-pointer"
+                aria-label="Barre de progression"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={progress}
+              >
+                <div
+                  className="h-full bg-yellow-300 transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              {/* Slider volume */}
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <label htmlFor="volume" className="text-white font-semibold">
+                  Volume
+                </label>
+                <input
+                  id="volume"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  className="w-full cursor-pointer"
+                  aria-label="Contrôle du volume"
+                />
+              </div>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
