@@ -40,9 +40,9 @@ jobs:
           JOB_STATUS: ${{ job.status }}
         run: |
           if [ "$JOB_STATUS" = "success" ]; then
-            MESSAGE="✅ Scrape Comets terminé avec succès !"
+            MESSAGE="@everyone ✅ Scrape Comets terminé avec succès !"
           else
-            MESSAGE="❌ Scrape Comets échoué !"
+            MESSAGE="@everyone ❌ Scrape Comets échoué !"
           fi
           curl -H "Content-Type: application/json" \
                -X POST \
