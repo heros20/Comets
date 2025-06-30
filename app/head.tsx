@@ -39,7 +39,7 @@ export default function Head() {
       {/* Google Search Console */}
       <meta name="google-site-verification" content="gwi_1N79m9NaFbKmzhg8K9EOL6pv8kxcYFPCm_7YS58" />
 
-      {/* JSON-LD pour SEO local et Google */}
+      {/* JSON-LD pour SEO sportif */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -65,8 +65,42 @@ export default function Head() {
                 addressCountry: "FR",
               },
             },
-            telephone: "06303230 76",
-            email: "schuster.axel@neuf.fr",
+            telephone: "+33612345678",
+            email: "contact@comets-honfleur.fr",
+          }),
+        }}
+      />
+
+      {/* JSON-LD pour SEO local / Google Maps */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: "Les Comets d'Honfleur",
+            image: "https://les-comets-honfleur.vercel.app/images/logo.png",
+            "@id": "https://les-comets-honfleur.vercel.app/",
+            url: "https://les-comets-honfleur.vercel.app/",
+            telephone: "+33612345678",
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: "Stade Municipal d'Honfleur",
+              addressLocality: "Honfleur",
+              postalCode: "14600",
+              addressCountry: "FR",
+            },
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: 49.4208,   // Stade d'Honfleur
+              longitude: 0.2331
+            },
+            openingHours: [
+              "Tu 17:00-19:00",
+              "Th 19:00-21:00"
+            ],
+            email: "contact@comets-honfleur.fr",
+            priceRange: "€"
           }),
         }}
       />
