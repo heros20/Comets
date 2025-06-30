@@ -1,20 +1,20 @@
 {
   "crons": [
     {
-      "path": "/api/scrapeClassement",
+      "path": "/app/api/scrapeClassement",
       "schedule": "0 2 * * *"
     },
     {
-      "path": "/api/scrapeTeam",
+      "path": "/app/api/scrapeTeam",
       "schedule": "0 2 * * *"
     }
   ],
   "functions": {
-    "api/scrapeClassement.js": {
+    "/appapi/scrapeClassement.js": {
       "memory": 256,
       "maxDuration": 10
     },
-    "api/scrapeTeam.js": {
+    "/appapi/scrapeTeam.js": {
       "memory": 256,
       "maxDuration": 10
     }
