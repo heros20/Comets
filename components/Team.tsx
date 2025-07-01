@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- Tes types
+// --- Types inchangés
 type Player = {
   id: number;
   team_abbr: string;
@@ -50,7 +50,7 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true);
   const [tabIdx, setTabIdx] = useState(0);
 
-  // Pour la pagination light
+  // Pagination light
   const [visiblePlayers, setVisiblePlayers] = useState(INIT_COUNT);
   const [visibleGames, setVisibleGames] = useState(INIT_COUNT);
 
@@ -78,7 +78,6 @@ export default function TeamPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Remet à 10 lignes à chaque changement d’onglet
   useEffect(() => {
     setVisiblePlayers(INIT_COUNT);
     setVisibleGames(INIT_COUNT);
@@ -98,21 +97,27 @@ export default function TeamPage() {
     { label: "Matchs", icon: "⚾️" },
   ];
 
-  // Helpers pour « Voir plus/moins »
   const canShowMorePlayers = players.length > visiblePlayers;
   const allPlayersVisible = players.length > INIT_COUNT && visiblePlayers >= players.length;
   const canShowMoreGames = games.length > visibleGames;
   const allGamesVisible = games.length > INIT_COUNT && visibleGames >= games.length;
 
   return (
-    
     <div id="equipe" className="max-w-4xl mx-auto py-12 px-2 md:px-6 ">
       {/* Ref pour le scroll */}
       <div ref={tabTopRef}></div>
       {/* Titre */}
-      <h2 className="text-3xl font-bold text-red-700 mb-6 text-center tracking-wide">
-        Effectif & Résultats 2025
-      </h2>
+      <div className="max-w-2xl mx-auto mb-7 p-5 rounded-2xl bg-white/90 backdrop-blur shadow-lg">
+  <h2 className="text-3xl font-bold text-red-700 mb-2 text-center tracking-wide">
+    Effectif & Résultats – Comets Baseball Honfleur 2025
+  </h2>
+  {/* Paragraphe d’intro pour Google/SEO */}
+  <p className="text-center text-base text-gray-700">
+    Retrouvez ici l’effectif à jour de l’équipe <strong>Les Comets d’Honfleur</strong> (club de baseball à Honfleur, Normandie) : tous les joueurs, les résultats des matchs de la saison 2025, et le lien direct vers chaque fiche FFBS.<br />
+    Suivez les performances de l’équipe de baseball d’Honfleur, les victoires et les adversaires !
+  </p>
+</div>
+
       {/* Onglets */}
       <div className="flex justify-center gap-2 mb-4">
         {tabs.map((tab, idx) => (
@@ -147,6 +152,9 @@ export default function TeamPage() {
               role="tabpanel"
             >
               <table className="min-w-full border rounded-xl bg-white">
+                <caption className="sr-only">
+                  Liste des joueurs Comets Honfleur – effectif baseball 2025, liens fiche FFBS, année, équipe.
+                </caption>
                 <thead>
                   <tr className="bg-orange-100">
                     <th className="p-3 border text-center font-semibold">Équipe</th>
@@ -175,6 +183,7 @@ export default function TeamPage() {
                                   href={p.player_link}
                                   target="_blank"
                                   rel="noopener noreferrer"
+                                  aria-label={`Fiche FFBS du joueur ${p.first_name} ${p.last_name}, équipe de baseball Comets Honfleur`}
                                   className="text-orange-600 hover:underline font-bold"
                                 >
                                   Voir
@@ -209,6 +218,7 @@ export default function TeamPage() {
                                     href={p.player_link}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={`Fiche FFBS du joueur ${p.first_name} ${p.last_name}, équipe de baseball Comets Honfleur`}
                                     className="text-orange-600 hover:underline font-bold"
                                   >
                                     Voir
@@ -269,6 +279,9 @@ export default function TeamPage() {
               role="tabpanel"
             >
               <table className="min-w-full border rounded-xl bg-white">
+                <caption className="sr-only">
+                  Résultats des matchs de l’équipe Comets Honfleur, saison 2025 – score, adversaire, domicile, lien boxscore.
+                </caption>
                 <thead>
                   <tr className="bg-orange-100">
                     <th className="p-3 border text-center font-semibold">Numéro</th>
@@ -298,7 +311,7 @@ export default function TeamPage() {
                               {g.opponentLogo && (
                                 <img
                                   src={g.opponentLogo}
-                                  alt={g.opponent}
+                                  alt={`Logo de l'équipe de baseball ${g.opponent}`}
                                   className="inline-block w-6 h-6 mr-2"
                                 />
                               )}
@@ -320,6 +333,7 @@ export default function TeamPage() {
                                   href={g.boxscore}
                                   target="_blank"
                                   rel="noopener noreferrer"
+                                  aria-label={`Boxscore du match Comets Honfleur vs ${g.opponent} – baseball Honfleur`}
                                   className="text-orange-600 hover:underline font-bold"
                                 >
                                   Voir
@@ -351,7 +365,7 @@ export default function TeamPage() {
                                 {g.opponentLogo && (
                                   <img
                                     src={g.opponentLogo}
-                                    alt={g.opponent}
+                                    alt={`Logo de l'équipe de baseball ${g.opponent}`}
                                     className="inline-block w-6 h-6 mr-2"
                                   />
                                 )}
@@ -373,6 +387,7 @@ export default function TeamPage() {
                                     href={g.boxscore}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={`Boxscore du match Comets Honfleur vs ${g.opponent} – baseball Honfleur`}
                                     className="text-orange-600 hover:underline font-bold"
                                   >
                                     Voir
@@ -427,7 +442,7 @@ export default function TeamPage() {
         </AnimatePresence>
       </div>
       <div className="text-center text-orange-400 mt-4 text-sm">
-        Données issues de la FFBS.
+        Données issues de la FFBS, fédération française de baseball.
       </div>
     </div>
   );

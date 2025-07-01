@@ -13,21 +13,19 @@ const tabAnim = {
 const fetcher = (url) => fetch(url).then(res => res.json());
 
 export default function Stats() {
-  const { data, isLoading, error } = useSWR("/api/classement-normandie", fetcher, {
-    // refreshInterval: 60000, // Désactivé car on stocke désormais en BDD
-  });
+  const { data, isLoading, error } = useSWR("/api/classement-normandie", fetcher);
   const [tabIdx, setTabIdx] = useState(0);
 
   if (isLoading)
     return (
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white" id="classement">
         <div className="container mx-auto px-4 text-center">Chargement du classement…</div>
       </section>
     );
 
   if (error || !data || !data.tabs)
     return (
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white" id="classement">
         <div className="container mx-auto px-4 text-center text-red-600">
           Erreur de chargement du classement. (FFBS en maintenance ?)
         </div>
@@ -42,11 +40,15 @@ export default function Stats() {
   ];
 
   return (
-    <section className="py-16 bg-white" id="classement">
+    <section className="py-16 bg-white" id="classement" aria-label="Classement championnat baseball Normandie">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-red-700 mb-8 text-center tracking-wider">
-          Championnat R1 Normandie <span className="text-orange-500">{year}</span>
+        <h2 className="text-3xl font-bold text-red-700 mb-4 text-center tracking-wider">
+          Classement Baseball Honfleur – Championnat R1 Normandie <span className="text-orange-500">{year}</span>
         </h2>
+        {/* Intro SEO-friendly */}
+        <p className="text-center text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+          Retrouvez ici le classement à jour du championnat <strong>R1 baseball Normandie</strong> : toutes les équipes engagées, les victoires/défaites, la progression de la saison, et la position des <span className="font-bold text-red-700">Comets d'Honfleur</span> !
+        </p>
         {/* Onglets */}
         <div className="flex flex-wrap justify-center gap-2 mb-6">
           {tabs.map((tab, idx) => (
@@ -79,6 +81,9 @@ export default function Stats() {
               aria-labelledby={tabs[tabIdx]}
             >
               <table className="min-w-full bg-white border">
+                <caption className="sr-only">
+                  Classement du championnat régional de baseball en Normandie – saison {year}
+                </caption>
                 <thead>
                   <tr className="bg-orange-100">
                     {staticColumns.map((col, i) => (
@@ -102,7 +107,7 @@ export default function Stats() {
                           {row.logo ? (
                             <img
                               src={row.logo}
-                              alt={row.abbreviation}
+                              alt={`Logo de l'équipe de baseball ${row.name}${row.name === "Comets d'Honfleur" ? ' (Honfleur)' : ''}`}
                               className="h-8 mx-auto rounded shadow"
                               loading="lazy"
                             />
@@ -153,7 +158,7 @@ export default function Stats() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            FFBS officielle
+            FFBS officielle – Championnat baseball Normandie
           </a>
         </div>
       </div>

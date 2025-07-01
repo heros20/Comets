@@ -13,7 +13,6 @@ export default function Hero() {
   const [showStripe, setShowStripe] = useState(false);
   const params = useSearchParams();
 
-  // Gestion des messages Stripe via l'URL et affichage popup
   useEffect(() => {
     const paymentSuccess = params.get("success");
     const paymentCanceled = params.get("canceled");
@@ -24,7 +23,6 @@ export default function Hero() {
       setPopupType("error");
       setShowPopup(true);
     }
-    // Nettoyage URL après popup
     if ((paymentSuccess || paymentCanceled) && typeof window !== "undefined") {
       const clean = () => {
         const url = window.location.pathname;
@@ -47,18 +45,20 @@ export default function Hero() {
       transition={{ duration: 0.9 }}
       className="relative py-20 flex flex-col items-center justify-center overflow-hidden"
       id="accueil"
+      aria-label="Section d'accueil, club de baseball Les Comets d'Honfleur"
     >
       {/* Overlay translucide orange */}
       <div className="absolute inset-0 z-0 bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 opacity-40 pointer-events-none" />
 
-      {/* Tout le contenu hero */}
       <div className="relative z-10 w-full flex flex-col items-center">
-        {/* Baseball SVG déco */}
+        {/* SVG baseball déco */}
         <svg
           width="440"
           height="440"
           viewBox="0 0 400 400"
           className="absolute -z-10 opacity-10 blur-[1.5px] top-10 left-1/2 -translate-x-1/2"
+          aria-hidden="true"
+          focusable="false"
         >
           <circle cx="200" cy="200" r="180" fill="white" />
           <path
@@ -76,25 +76,34 @@ export default function Hero() {
             strokeLinecap="round"
           />
         </svg>
-        <h2 className="text-5xl md:text-6xl font-extrabold text-white mb-6 drop-shadow-xl uppercase tracking-wider text-center">
-          Rejoins les <span className="text-yellow-200">Comets</span> !
+        {/* --- TITRE H1 optimisé --- */}
+        <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 drop-shadow-xl uppercase tracking-wider text-center">
+          Rejoins le club de baseball <span className="text-yellow-200"></span> à Honfleur !
+        </h1>
+        {/* --- sous-titre H2 SEO-only, masqué mais indexé --- */}
+        <h2 className="sr-only">
+          Équipe de baseball à Honfleur, Les Comets : club sportif en Normandie, entraînements, matchs et passion du baseball.
         </h2>
+        {/* --- Paragraphe avec mots-clés --- */}
         <p className="text-xl md:text-2xl text-orange-100 mb-10 font-medium text-center max-w-2xl mx-auto">
-          Passion et esprit d'équipe sur le terrain. Découvre le baseball à Honfleur avec notre équipe !
+          Découvre le <strong>baseball à Honfleur</strong> avec Les Comets : <span className="font-bold">club familial et ambitieux</span> en Normandie.<br />
+          Passion, esprit d'équipe, matchs et entraînements ouverts à tous. Rejoins-nous sur le terrain !
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center relative">
           <a
             href="#contact"
             className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-white text-red-600 hover:bg-orange-50 text-lg font-bold shadow-lg transition-transform hover:scale-105"
+            aria-label="Contact équipe de baseball Honfleur"
           >
             <Users className="mr-2 h-5 w-5" />
             Nous contacter
           </a>
-          {/* ---- NOUVEAU BOUTON POPUP ENTRAINEMENTS ---- */}
+          {/* ---- BOUTON POPUP ENTRAINEMENTS ---- */}
           <button
             type="button"
             onClick={() => setShowTrainingModal(true)}
             className="inline-flex items-center justify-center px-8 py-3 rounded-full border-2 border-white text-white hover:bg-white hover:text-red-600 text-lg font-bold shadow-md transition-transform hover:scale-105 cursor-pointer select-none"
+            aria-label="Voir les entraînements baseball Comets Honfleur"
           >
             <Calendar className="mr-2 h-5 w-5" />
             Voir les Entraînements
@@ -103,6 +112,7 @@ export default function Hero() {
           <button
             onClick={() => setShowModal(true)}
             className="inline-flex items-center justify-center px-8 py-3 rounded-full border-2 border-white text-white hover:bg-white hover:text-red-600 text-lg font-bold shadow-md transition-transform hover:scale-105 cursor-pointer select-none"
+            aria-label="Inscription club baseball Honfleur"
           >
             Nous rejoindre
           </button>
@@ -133,7 +143,7 @@ export default function Hero() {
                   id="modal-entrainements-title"
                   className="text-3xl font-extrabold text-orange-600 mb-4 text-center"
                 >
-                  Les entraînements Comets
+                  Les entraînements du club de baseball Comets Honfleur
                 </h2>
                 <div className="text-lg text-gray-800 mb-2 text-center">
                   <span className="block mb-2 font-bold text-red-600 text-xl">
@@ -141,14 +151,14 @@ export default function Hero() {
                   </span>
                   <span className="block text-base text-gray-600 mb-4">
                     Tous les joueurs, tous niveaux.<br />
-                    Travail d'équipe, jeux de match, batting, défense et bonne humeur au programme !
+                    Travail d'équipe, jeux de match, batting, défense et bonne humeur sur le terrain de baseball à Honfleur !
                   </span>
                   <span className="block mb-2 font-bold text-red-600 text-xl">
                     Mardi&nbsp;: <span className="text-orange-500 font-extrabold">Entraînement Pitcher/Catcher</span>
                   </span>
                   <span className="block text-base text-gray-600">
                     Spécial lanceurs & receveurs.<br />
-                    Précision, puissance, technique, et quelques secrets de la batterie...
+                    Précision, puissance, technique, et secrets du <strong>baseball à Honfleur</strong>…
                   </span>
                 </div>
                 <div className="flex flex-col items-center gap-2 w-full mt-6">
@@ -197,15 +207,15 @@ export default function Hero() {
                   id="modal-rejoindre-title"
                   className="text-3xl font-extrabold text-red-700 mb-2"
                 >
-                  Rejoins les Comets !
+                  Inscription au club de baseball Les Comets d'Honfleur
                 </h2>
                 <p className="text-gray-700 text-lg text-center mb-2">
-                  Tu veux t’inscrire, devenir membre ou juste nous poser des questions ?<br />
+                  Tu veux t’inscrire, devenir membre du club de baseball d'Honfleur ou juste nous poser des questions ?<br />
                   <span className="text-orange-500 font-bold">On t’attend, champion !</span>
                 </p>
                 <ul className="mb-4 text-base text-gray-700 text-left max-w-md mx-auto list-disc list-inside">
-                  <li>Accès à tous les entraînements et matchs</li>
-                  <li>Assurance sportive incluse</li>
+                  <li>Accès à tous les entraînements et matchs à Honfleur</li>
+                  <li>Assurance sportive incluse pour tous les membres</li>
                   <li>Ambiance et progrès garantis 🏆</li>
                 </ul>
                 <button
@@ -245,7 +255,7 @@ export default function Hero() {
                 <>
                   <CheckCircle className="w-14 h-14 text-green-600 mb-2" />
                   <div className="text-2xl font-bold text-green-800 mb-2">Paiement réussi !</div>
-                  <div className="text-lg text-gray-700 mb-2">Bienvenue chez les Comets.</div>
+                  <div className="text-lg text-gray-700 mb-2">Bienvenue chez les Comets, club de baseball à Honfleur.</div>
                 </>
               ) : (
                 <>
@@ -265,7 +275,6 @@ export default function Hero() {
           </div>
         )}
 
-        {/* Animation d'apparition (facultative) */}
         <style jsx>{`
           .animate-fade-in {
             animation: fade-in 0.35s cubic-bezier(0.39, 0.575, 0.565, 1) both;

@@ -81,7 +81,7 @@ export default function HymneCometsAccordion() {
         aria-controls="comets-hymne-panel"
       >
         <span className="text-2xl">🎶</span>
-        {isOpen ? "Fermer l’hymne des Comets" : "Ouvrir l’hymne des Comets"}
+        {isOpen ? "Fermer l’hymne des Comets" : "Écouter l’hymne des Comets de Honfleur"}
       </button>
 
       <AnimatePresence initial={false}>
@@ -93,8 +93,20 @@ export default function HymneCometsAccordion() {
             exit={{ height: 0, opacity: 0, transition: { duration: 0.25 } }}
             className="overflow-hidden bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 rounded-xl text-white text-center shadow-lg mt-4"
           >
+            {/* Bloc SEO/description visible uniquement ouvert, bien lisible */}
+            <div
+              className="text-center text-base font-medium text-gray-800 mb-6 px-3 py-3 bg-white/85 rounded-xl max-w-lg mx-auto mt-4 shadow"
+              aria-label="hymne équipe baseball Honfleur description"
+              style={{ lineHeight: 1.5 }}
+            >
+              <strong>Hymne de l’équipe de baseball Les Comets d’Honfleur</strong> : <br />
+              Découvrez la musique du club – l’ambiance baseball à Honfleur, Normandie ! <br />
+              Symbole de notre passion pour le baseball de la ville d’Honfleur.
+            </div>
             <div className="px-6 py-8">
-              <h2 className="text-3xl font-extrabold mb-4">Hymne des Comets</h2>
+              <h2 className="text-3xl font-extrabold mb-4">
+                Hymne des Comets d’Honfleur – musique
+              </h2>
               <audio ref={audioRef} src="/sounds/hymne-comets.mp3" preload="auto" />
               <button
                 onClick={togglePlay}

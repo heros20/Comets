@@ -9,12 +9,21 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <img
             src="/images/honfleurcomets.png"
-            alt="Logo Les Comets d'Honfleur"
+            alt="Logo équipe de baseball Les Comets d'Honfleur, club de baseball à Honfleur en Normandie"
             className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl"
           />
           <div>
-            <h1 className="text-2xl font-extrabold text-red-700 tracking-wider uppercase">Les Comets</h1>
-            <p className="text-xs text-orange-700 font-semibold -mt-1">d'Honfleur</p>
+            <h1 className="text-2xl font-extrabold text-red-700 tracking-wider uppercase">
+              Les Comets <span className="sr-only">, équipe de baseball à Honfleur</span>
+            </h1>
+            {/* Paragraphe d’accroche, enrichi SEO mais naturel */}
+            <p className="text-xs text-orange-700 font-semibold -mt-1">
+              d'Honfleur – Baseball club en Normandie
+            </p>
+            {/* Titre SEO-only, invisible à l’œil mais visible pour Google */}
+            <h2 className="sr-only">
+              Club de baseball à Honfleur : les Comets, équipe engagée en championnat de Normandie
+            </h2>
           </div>
         </div>
         <nav className="hidden md:flex gap-8">

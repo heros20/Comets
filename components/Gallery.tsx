@@ -19,8 +19,21 @@ export default function Gallery() {
       </section>
     );
 
-  // Découpe les images
+  // Images à afficher
   const visibleImages = showAll ? gallery : gallery.slice(0, 4);
+
+  // Fonction pour alt SEO friendly
+  const getImageAlt = (img: any, idx: number) => {
+    if (img.legend) {
+      // Ajoute baseball Honfleur si ce n’est pas déjà dedans
+      let alt = img.legend;
+      if (!alt.toLowerCase().includes("honfleur") || !alt.toLowerCase().includes("baseball")) {
+        alt += " – Baseball Comets Honfleur";
+      }
+      return alt;
+    }
+    return `Photo Comets Honfleur baseball ${idx + 1}`;
+  };
 
   return (
     <section id="galerie" className="py-20 bg-white">
@@ -30,29 +43,34 @@ export default function Gallery() {
             className="text-4xl md:text-5xl font-bold text-red-700 mb-4"
             ref={galleryTitleRef}
           >
-            Galerie Photos
+            Galerie Photos – Comets Baseball Honfleur
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Revivez nos meilleurs moments sur le terrain
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
+            Plongez dans la <strong>galerie photos officielle</strong> des Comets d’Honfleur&nbsp;: <br />
+            matchs de baseball à Honfleur, moments forts de l’équipe, entraînements et souvenirs de la saison. <br />
+            Découvrez l’ambiance unique du baseball à Honfleur&nbsp;!
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          aria-label="Galerie photos équipe de baseball Comets Honfleur"
+        >
           {visibleImages.map((img: any, idx: number) => (
-            <div
+            <figure
               key={img.id || idx}
               className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 group cursor-pointer"
               style={{ height: "200px", width: "100%" }}
               onClick={() => setModalImg({ url: img.url, legend: img.legend })}
-              aria-label={`Afficher la photo ${idx + 1} en grand`}
-              role="button"
+              aria-label={`Photo ${idx + 1} de la galerie Comets Honfleur`}
               tabIndex={0}
               onKeyDown={e => {
                 if (e.key === "Enter" || e.key === " ") setModalImg({ url: img.url, legend: img.legend });
               }}
+              role="button"
             >
               <Image
                 src={img.url}
-                alt={img.legend || `Photo ${idx + 1}`}
+                alt={getImageAlt(img, idx)}
                 fill
                 style={{ objectFit: "cover" }}
                 placeholder="blur"
@@ -62,11 +80,11 @@ export default function Gallery() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               {img.legend && (
-                <div className="absolute bottom-2 left-2 bg-white/80 rounded px-3 py-1 text-orange-700 font-semibold text-sm shadow">
+                <figcaption className="absolute bottom-2 left-2 bg-white/80 rounded px-3 py-1 text-orange-700 font-semibold text-sm shadow">
                   {img.legend}
-                </div>
+                </figcaption>
               )}
-            </div>
+            </figure>
           ))}
         </div>
 
@@ -88,11 +106,19 @@ export default function Gallery() {
                 }
               }}
               className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white text-lg font-bold px-8 py-3 rounded-full shadow transition"
+              aria-label={showAll ? "Réduire la galerie photos Comets Honfleur" : "Afficher plus de photos Comets Honfleur"}
             >
               {showAll ? "Voir moins" : "Voir plus"}
             </button>
           </div>
         )}
+
+        {/* Table virtuelle cachée pour le SEO (optionnel) */}
+        <table style={{ position: 'absolute', left: '-9999px', top: '-9999px', height: 0, width: 0 }}>
+          <caption>
+            Galerie officielle de l’équipe de baseball Les Comets d’Honfleur – Photos, souvenirs, matchs, entraînements et moments marquants à Honfleur.
+          </caption>
+        </table>
       </div>
 
       {/* MODALE ANIMÉE */}
@@ -103,7 +129,7 @@ export default function Gallery() {
             onClick={() => setModalImg(null)}
             role="dialog"
             aria-modal="true"
-            aria-label="Image en grand format"
+            aria-label="Image de la galerie Comets Honfleur en grand format"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -119,13 +145,13 @@ export default function Gallery() {
               <button
                 onClick={() => setModalImg(null)}
                 className="absolute top-2 right-2 text-white bg-black bg-opacity-60 rounded-full p-2 hover:bg-opacity-90 transition"
-                aria-label="Fermer l'image"
+                aria-label="Fermer la photo agrandie"
               >
                 ✕
               </button>
               <Image
                 src={modalImg.url}
-                alt={modalImg.legend || "Image agrandie"}
+                alt={getImageAlt(modalImg, 0)}
                 width={800}
                 height={1200}
                 style={{ objectFit: "contain" }}
