@@ -12,7 +12,7 @@ export default function BaseballBalle() {
 
   // Animation loop
   useEffect(() => {
-    let frame: number;
+    let frame;
     function animate() {
       let { x, y } = pos.current;
       let { dx, dy } = vel.current;
@@ -42,8 +42,8 @@ export default function BaseballBalle() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  function handleMouseMove(e: React.MouseEvent) {
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
+  function handleMouseMove(e) {
+    const rect = e.target.getBoundingClientRect();
     const ballCenter = {
       x: rect.left + BALL_SIZE / 2,
       y: rect.top + BALL_SIZE / 2,
@@ -88,7 +88,7 @@ export default function BaseballBalle() {
       }}
       onMouseMove={handleMouseMove}
       title="Attrape-moi si tu peux !"
-      className="select-none"
+      className="select-none hidden md:block"
     >
       <div
         className="w-full h-full flex items-center justify-center text-[58px] md:text-[70px] drop-shadow-lg"
