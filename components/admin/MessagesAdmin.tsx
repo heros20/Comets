@@ -1,9 +1,6 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
-import useSWR from "swr";
-import { logAdminAction } from "@/utils/adminLog";
-
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 function formatDate(dateStr: string | undefined) {
   if (!dateStr) return "Date inconnue";
@@ -13,34 +10,57 @@ function formatDate(dateStr: string | undefined) {
 }
 
 export default function MessagesAdmin() {
-  const { data: messages, isLoading, mutate } = useSWR("/api/messages", fetcher, {
-    refreshInterval: 2000,
-  });
-
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const lastCount = useRef(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // 1. Récupère les messages au mount
   useEffect(() => {
-    if (!messages || !Array.isArray(messages)) return;
-    if (lastCount.current === 0) {
-      lastCount.current = messages.length;
-      return;
-    }
-    if (messages.length > lastCount.current) {
-      // Notification visuelle
-      const notif = document.createElement("div");
-      notif.innerText = "📣 Nouveau message reçu !";
-      notif.className =
-        "fixed top-4 right-4 z-[9999] bg-red-600 text-white px-6 py-3 rounded-full shadow-lg text-lg font-bold animate-bounce";
-      document.body.appendChild(notif);
-      setTimeout(() => notif.remove(), 4000);
-      // Notification sonore
-      audioRef.current?.play();
-    }
-    lastCount.current = messages.length;
-  }, [messages]);
+    fetch("/api/messages")
+      .then(r => r.json())
+      .then(data => {
+        setMessages(data || []);
+        lastCount.current = (data || []).length;
+        setLoading(false);
+      });
+  }, []);
 
+  // 2. Ecoute les nouveaux messages en live (Supabase realtime)
+  useEffect(() => {
+    const channel = supabase
+      .channel("messages-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          setMessages((prev) => [payload.new, ...prev]);
+          // Notif visuelle + sonore
+          const notif = document.createElement("div");
+          notif.innerText = "📣 Nouveau message reçu !";
+          notif.className =
+            "fixed top-4 right-4 z-[9999] bg-red-600 text-white px-6 py-3 rounded-full shadow-lg text-lg font-bold animate-bounce";
+          document.body.appendChild(notif);
+          setTimeout(() => notif.remove(), 4000);
+          audioRef.current?.play();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "messages" },
+        (payload) => {
+          setMessages((prev) => prev.filter((msg) => msg.id !== payload.old.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // 3. Suppression
   async function handleDelete(id: string) {
     setDeletingId(id);
     await fetch("/api/messages", {
@@ -48,14 +68,11 @@ export default function MessagesAdmin() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     });
-    await logAdminAction("Supprimé un message du formulaire de contact");
     setDeletingId(null);
-    mutate();
+    // L'événement DELETE supprime direct côté live, pas besoin de refetch !
   }
 
-  if (isLoading || !messages) return <div>Chargement...</div>;
-
-  if (!Array.isArray(messages)) return <div>Erreur de données reçues</div>;
+  if (loading) return <div>Chargement...</div>;
 
   return (
     <div>
@@ -65,7 +82,7 @@ export default function MessagesAdmin() {
         <div className="text-gray-500 text-center py-8">Aucun message pour l’instant…</div>
       )}
       <div className="space-y-4">
-        {messages.map((msg: any) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className="bg-orange-50 border border-orange-200 rounded-lg shadow p-4 relative"

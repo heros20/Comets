@@ -6,7 +6,6 @@ import TeamAdmin from "@/components/admin/TeamAdmin";
 import GalleryAdmin from "@/components/admin/GalleryAdmin";
 import MessagesAdmin from "@/components/admin/MessagesAdmin";
 import LogsAdmin from "@/components/admin/LogsAdmin";
-import MessageNotifier from "@/components/admin/MessageNotifier";
 import { useRouter } from "next/navigation";
 
 const TAB_KEY = "admin_tab_comets";
@@ -64,7 +63,7 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100 px-4 py-8">
-      <MessageNotifier />
+      
       <div className="flex justify-end mb-2">
         <button
           onClick={handleLogout}
