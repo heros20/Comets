@@ -2,16 +2,23 @@
 import { useEffect, useState } from "react";
 
 export default function BoutonAdmin() {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/check-session")
-      .then(res => res.json())
-      .then(data => {
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/admin/check-session");
+        if (!res.ok) throw new Error("Erreur de session");
+        const data = await res.json();
         setIsAdmin(data.isAdmin === true);
-      })
-      .catch(() => setIsAdmin(false));
+      } catch {
+        setIsAdmin(false);
+      }
+    }
+    checkSession();
   }, []);
+
+  if (isAdmin === null) return null; // ou un loader léger
 
   if (!isAdmin) return null;
 
