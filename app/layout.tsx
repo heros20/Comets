@@ -36,7 +36,7 @@ export default function RootLayout({
             left: 0,
             width: '100vw',
             height: '100vh',
-            backgroundImage: 'url("/images/baseballwallpaper.webp")',
+            backgroundImage: 'url("/images/CometsWallpaper2.jpeg")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             filter: 'brightness(0.5)',

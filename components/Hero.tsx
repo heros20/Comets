@@ -47,35 +47,12 @@ export default function Hero() {
       id="accueil"
       aria-label="Section d'accueil, club de baseball Les Comets d'Honfleur"
     >
-      {/* Overlay translucide orange */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 opacity-40 pointer-events-none" />
+      {/* Overlay translucide blanc */}
+      <div className="absolute inset-0 z-0 bg-white opacity-10 pointer-events-none" />
 
       <div className="relative z-10 w-full flex flex-col items-center">
-        {/* SVG baseball déco */}
-        <svg
-          width="440"
-          height="440"
-          viewBox="0 0 400 400"
-          className="absolute -z-10 opacity-10 blur-[1.5px] top-10 left-1/2 -translate-x-1/2"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <circle cx="200" cy="200" r="180" fill="white" />
-          <path
-            d="M60,120 Q200,200 340,120"
-            stroke="#c0392b"
-            strokeWidth="6"
-            fill="none"
-            strokeLinecap="round"
-          />
-          <path
-            d="M60,280 Q200,200 340,280"
-            stroke="#c0392b"
-            strokeWidth="6"
-            fill="none"
-            strokeLinecap="round"
-          />
-        </svg>
+        {/* --- PAS DE SVG ICI, ADIEU LA BALLE DE BASEBALL --- */}
+
         {/* --- TITRE H1 optimisé --- */}
         <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 drop-shadow-xl uppercase tracking-wider text-center">
           Rejoins le club de baseball <span className="text-yellow-200"></span> à Honfleur !
@@ -84,10 +61,13 @@ export default function Hero() {
         <h2 className="sr-only">
           Équipe de baseball à Honfleur, Les Comets : club sportif en Normandie, entraînements, matchs et passion du baseball.
         </h2>
-        {/* --- Paragraphe avec mots-clés --- */}
-        <p className="text-xl md:text-2xl text-orange-100 mb-10 font-medium text-center max-w-2xl mx-auto">
-          Découvre le <strong>baseball à Honfleur</strong> avec Les Comets : <span className="font-bold">club familial et ambitieux</span> en Normandie.<br />
-          Passion, esprit d'équipe, matchs et entraînements ouverts à tous. Rejoins-nous sur le terrain !
+        {/* --- Paragraphe avec mots-clés, rendu bien lisible --- */}
+        <p className="text-xl md:text-2xl text-gray-800 drop-shadow font-medium text-center max-w-2xl mx-auto mb-10">
+          Découvre le <strong className="text-red-700 font-extrabold drop-shadow-sm">baseball à Honfleur</strong> avec Les Comets :{" "}
+          <span className="font-bold text-orange-600">club familial et ambitieux</span> en Normandie.<br />
+          <span className="text-gray-900 font-semibold">
+            Passion, esprit d'équipe, matchs et entraînements ouverts à tous. Rejoins-nous sur le terrain !
+          </span>
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center relative">
           <a
