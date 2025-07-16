@@ -10,23 +10,25 @@ const tabAnim = {
   exit: { opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.25 } },
 };
 
-const fetcher = (url) => fetch(url).then(res => res.json());
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function Stats() {
+export function ClassementComponent() {
   const { data, isLoading, error } = useSWR("/api/classement-normandie", fetcher);
   const [tabIdx, setTabIdx] = useState(0);
 
   if (isLoading)
     return (
-      <section className="py-16 bg-white" id="classement">
-        <div className="container mx-auto px-4 text-center">Chargement du classement…</div>
+      <section id="classement" className="py-12">
+        <div className="w-full max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl p-8 md:p-14 text-center">
+          Chargement du classement…
+        </div>
       </section>
     );
 
   if (error || !data || !data.tabs)
     return (
-      <section className="py-16 bg-white" id="classement">
-        <div className="container mx-auto px-4 text-center text-red-600">
+      <section id="classement" className="py-12">
+        <div className="w-full max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl p-8 md:p-14 text-center text-red-600">
           Erreur de chargement du classement. (FFBS en maintenance ?)
         </div>
       </section>
@@ -34,28 +36,26 @@ export default function Stats() {
 
   const { tabs, standings, year } = data;
 
-  // Ligne d'entête avec colonne vide juste après le #
   const staticColumns = [
     "#", "Logo", "Abbr", "Equipe", "V", "D", "T", "PCT", "GB"
   ];
 
   return (
-    <section className="py-16 bg-white" id="classement" aria-label="Classement championnat baseball Normandie">
-      <div className="container mx-auto px-4">
+    <section id="classement" className="py-12"> {/* Section sans bg ni padding fort */}
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-3xl shadow-2xl p-8 md:p-14 transition-all duration-300">
         <h2 className="text-3xl font-bold text-red-700 mb-4 text-center tracking-wider">
           Classement Baseball Honfleur – Championnat R1 Normandie <span className="text-orange-500">{year}</span>
         </h2>
-        {/* Intro SEO-friendly */}
-        <p className="text-center text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-          Retrouvez ici le classement à jour du championnat <strong>R1 baseball Normandie</strong> : toutes les équipes engagées, les victoires/défaites, la progression de la saison, et la position des <span className="font-bold text-red-700">Comets d'Honfleur</span> !
+        <p className="text-center text-lg text-gray-600 mb-6 max-w-3xl mx-auto">
+          Retrouvez ici le classement à jour du championnat <strong>R1 baseball Normandie</strong> : toutes les équipes engagées, les victoires/défaites, la progression de la saison, et la position des <span className="font-bold text-red-700">Comets d'Honfleur</span> !
         </p>
-        {/* Onglets */}
+        {/* Onglets moelleux */}
         <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {tabs.map((tab, idx) => (
+          {tabs.map((tab: string, idx: number) => (
             <button
               key={tab}
               onClick={() => setTabIdx(idx)}
-              className={`px-6 py-2 rounded-t-lg font-semibold transition-all duration-200
+              className={`px-6 py-2 rounded-full font-semibold transition-all duration-200
                 ${
                   tabIdx === idx
                     ? "bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-md scale-105"
@@ -69,8 +69,8 @@ export default function Stats() {
             </button>
           ))}
         </div>
-        {/* Table animée */}
-        <div className="overflow-x-auto rounded-lg shadow bg-white p-1 min-h-[280px]">
+        {/* Boîte qui entoure le tableau (l'intermédiaire, tu peux la virer ou juste borderless) */}
+        <div className="overflow-x-auto min-h-[280px] transition-all duration-200">
           <AnimatePresence mode="wait">
             <motion.div
               key={tabIdx}
@@ -80,7 +80,7 @@ export default function Stats() {
               role="tabpanel"
               aria-labelledby={tabs[tabIdx]}
             >
-              <table className="min-w-full bg-white border">
+              <table className="min-w-full bg-white border rounded-2xl overflow-hidden">
                 <caption className="sr-only">
                   Classement du championnat régional de baseball en Normandie – saison {year}
                 </caption>
@@ -93,7 +93,7 @@ export default function Stats() {
                 </thead>
                 <tbody>
                   {standings[tabIdx]?.length > 0 ? (
-                    standings[tabIdx].map((row, i) => (
+                    standings[tabIdx].map((row: any, i: number) => (
                       <tr
                         key={i}
                         className={`${
@@ -108,7 +108,7 @@ export default function Stats() {
                             <img
                               src={row.logo}
                               alt={`Logo de l'équipe de baseball ${row.name}${row.name === "Comets d'Honfleur" ? ' (Honfleur)' : ''}`}
-                              className="h-8 mx-auto rounded shadow"
+                              className="h-8 w-8 mx-auto rounded-full shadow"
                               loading="lazy"
                             />
                           ) : null}

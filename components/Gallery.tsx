@@ -1,7 +1,7 @@
 "use client";
 import useSWR from "swr";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -11,6 +11,24 @@ export default function Gallery() {
   const [modalImg, setModalImg] = useState<{ url: string; legend?: string } | null>(null);
   const [showAll, setShowAll] = useState(false);
   const galleryTitleRef = useRef<HTMLHeadingElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Pour l’accessibilité : focus auto sur la croix quand la modale s’ouvre
+  useEffect(() => {
+    if (modalImg && closeBtnRef.current) {
+      closeBtnRef.current.focus();
+    }
+  }, [modalImg]);
+
+  // ESC pour fermer la modale
+  useEffect(() => {
+    if (!modalImg) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setModalImg(null);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [modalImg]);
 
   if (isLoading || !gallery)
     return (
@@ -24,15 +42,12 @@ export default function Gallery() {
 
   // Fonction pour alt SEO friendly
   const getImageAlt = (img: any, idx: number) => {
-    if (img.legend) {
-      // Ajoute baseball Honfleur si ce n’est pas déjà dedans
-      let alt = img.legend;
-      if (!alt.toLowerCase().includes("honfleur") || !alt.toLowerCase().includes("baseball")) {
-        alt += " – Baseball Comets Honfleur";
-      }
-      return alt;
-    }
-    return `Photo Comets Honfleur baseball ${idx + 1}`;
+    let alt = img.legend ? img.legend : `Photo Comets Honfleur baseball ${idx + 1}`;
+    // On sature les mots-clés mais sans spam non plus
+    if (!alt.toLowerCase().includes("honfleur")) alt += " – Honfleur";
+    if (!alt.toLowerCase().includes("baseball")) alt += " – Baseball";
+    if (!alt.toLowerCase().includes("comets")) alt += " – Comets";
+    return alt;
   };
 
   return (
@@ -58,7 +73,7 @@ export default function Gallery() {
           {visibleImages.map((img: any, idx: number) => (
             <figure
               key={img.id || idx}
-              className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 group cursor-pointer"
+              className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 group cursor-pointer"
               style={{ height: "200px", width: "100%" }}
               onClick={() => setModalImg({ url: img.url, legend: img.legend })}
               aria-label={`Photo ${idx + 1} de la galerie Comets Honfleur`}
@@ -73,14 +88,17 @@ export default function Gallery() {
                 alt={getImageAlt(img, idx)}
                 fill
                 style={{ objectFit: "cover" }}
+                // Uniquement la première image prioritaire pour le LCP
+                priority={idx === 0}
+                // Si tu n'utilises pas next/image pour générer un vrai blur, retire blurDataURL
                 placeholder="blur"
                 blurDataURL="/placeholder.svg"
-                loading="lazy"
+                loading={idx === 0 ? "eager" : "lazy"}
                 sizes="(max-width: 768px) 100vw, 300px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               {img.legend && (
-                <figcaption className="absolute bottom-2 left-2 bg-white/80 rounded px-3 py-1 text-orange-700 font-semibold text-sm shadow">
+                <figcaption className="absolute bottom-2 left-2 bg-white/90 rounded px-3 py-1 text-orange-700 font-semibold text-sm shadow">
                   {img.legend}
                 </figcaption>
               )}
@@ -143,9 +161,11 @@ export default function Gallery() {
               transition={{ duration: 0.3, ease: "easeOut" }}
             >
               <button
+                ref={closeBtnRef}
                 onClick={() => setModalImg(null)}
-                className="absolute top-2 right-2 text-white bg-black bg-opacity-60 rounded-full p-2 hover:bg-opacity-90 transition"
+                className="absolute top-2 right-2 text-white bg-black bg-opacity-60 rounded-full p-2 hover:bg-opacity-90 transition focus:outline-none focus:ring-2 focus:ring-orange-400"
                 aria-label="Fermer la photo agrandie"
+                tabIndex={0}
               >
                 ✕
               </button>
@@ -155,10 +175,11 @@ export default function Gallery() {
                 width={800}
                 height={1200}
                 style={{ objectFit: "contain" }}
-                priority
+                // pas de priority ici, c'est en modale
+                loading="eager"
               />
               {modalImg.legend && (
-                <div className="mt-2 text-center text-white font-semibold">{modalImg.legend}</div>
+                <div className="mt-2 text-center text-white font-semibold drop-shadow">{modalImg.legend}</div>
               )}
             </motion.div>
           </motion.div>

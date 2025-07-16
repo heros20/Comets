@@ -8,7 +8,8 @@ const supabase = createClient(
 );
 
 export async function GET() {
-  const cookieStore = cookies(); // pas d'await ici
+  // La doc t'oblige à faire comme ça maintenant :
+  const cookieStore = await cookies();
   const adminSession = cookieStore.get("admin_session");
 
   if (!adminSession?.value) {

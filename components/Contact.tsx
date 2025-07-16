@@ -2,6 +2,16 @@
 import { useState } from "react";
 import { Mail, Phone, MapPin } from "lucide-react";
 
+// --- FONCTION DE FILTRAGE --- //
+function sanitizeInput(str: string, maxLen = 200) {
+  return (
+    str
+      .replace(/[<>"'`{}$;]/g, "") // Enlève balises HTML/SVG et trucs dangereux
+      .replace(/(script|onerror|onload)/gi, "") // Désactive scripts connus
+      .substring(0, maxLen)
+  );
+}
+
 export default function Contact() {
   const [form, setForm] = useState({
     firstname: "",
@@ -9,38 +19,77 @@ export default function Contact() {
     email: "",
     phone: "",
     message: "",
+    hp: "", // Champ honeypot
   });
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
+  // --- On nettoie tout à chaque frappe
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    if (name === "hp") {
+      setForm(f => ({ ...f, [name]: value }));
+      return;
+    }
+    setForm(f => ({
+      ...f,
+      [name]: sanitizeInput(value, name === "message" ? 1000 : 64),
+    }));
     setSuccess(false);
+    setError("");
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: `${form.firstname} ${form.lastname}`.trim(),
-        email: form.email,
-        phone: form.phone,
-        message: form.message,
-      }),
-    });
-    setLoading(false);
-    setSuccess(true);
-    setForm({
-      firstname: "",
-      lastname: "",
-      email: "",
-      phone: "",
-      message: "",
-    });
+    setError("");
+
+    // Blocage si honeypot rempli
+    if (form.hp) {
+      setLoading(false);
+      setError("Erreur : validation anti-spam.");
+      return;
+    }
+
+    // Validation basique côté client (serveur doit faire pareil)
+    if (
+      !form.firstname ||
+      !form.lastname ||
+      !form.email ||
+      !form.message ||
+      !/^[\w-.]+@[\w-]+\.[\w-.]+$/.test(form.email)
+    ) {
+      setLoading(false);
+      setError("Merci de remplir tous les champs obligatoires.");
+      return;
+    }
+
+    try {
+      await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: `${form.firstname} ${form.lastname}`.trim(),
+          email: form.email,
+          phone: form.phone,
+          message: form.message,
+        }),
+      });
+      setSuccess(true);
+      setForm({
+        firstname: "",
+        lastname: "",
+        email: "",
+        phone: "",
+        message: "",
+        hp: "",
+      });
+    } catch {
+      setError("Erreur lors de l’envoi. Merci de réessayer.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -48,10 +97,10 @@ export default function Contact() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Contact – Club de Baseball Les Comets Honfleur
+            Contact – Honfleur Baseball Club&nbsp;: Les Comets
           </h2>
           <p className="text-xl text-orange-100 max-w-2xl mx-auto">
-            Un projet, une question, une envie de rejoindre l’équipe ?  
+            Un projet, une question, une envie de rejoindre l’équipe ?
             <strong> Contactez le club de baseball Les Comets d’Honfleur</strong> et vivez la passion du baseball en Normandie&nbsp;!
           </p>
         </div>
@@ -61,7 +110,27 @@ export default function Contact() {
             <h3 className="text-2xl font-bold text-red-700 mb-6">
               Formulaire de contact : baseball Honfleur
             </h3>
-            <form className="space-y-6" onSubmit={handleSubmit} aria-label="Formulaire d’adhésion et contact club de baseball Honfleur">
+            <form
+              className="space-y-6"
+              onSubmit={handleSubmit}
+              aria-label="Formulaire d’adhésion et contact club de baseball Honfleur"
+              autoComplete="off"
+            >
+              {/* --- Honeypot anti-spam --- */}
+              <div style={{ display: "none" }}>
+                <label>
+                  Laissez ce champ vide
+                  <input
+                    type="text"
+                    name="hp"
+                    value={form.hp}
+                    onChange={handleChange}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </label>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
@@ -73,6 +142,7 @@ export default function Contact() {
                     className="border-orange-200 focus:border-red-500 rounded px-3 py-2 w-full"
                     required
                     autoComplete="given-name"
+                    maxLength={32}
                   />
                 </div>
                 <div>
@@ -85,6 +155,7 @@ export default function Contact() {
                     className="border-orange-200 focus:border-red-500 rounded px-3 py-2 w-full"
                     required
                     autoComplete="family-name"
+                    maxLength={32}
                   />
                 </div>
               </div>
@@ -99,6 +170,7 @@ export default function Contact() {
                   className="border-orange-200 focus:border-red-500 rounded px-3 py-2 w-full"
                   required
                   autoComplete="email"
+                  maxLength={64}
                 />
               </div>
               <div>
@@ -110,6 +182,9 @@ export default function Contact() {
                   placeholder="Votre numéro de téléphone"
                   className="border-orange-200 focus:border-red-500 rounded px-3 py-2 w-full"
                   autoComplete="tel"
+                  maxLength={18}
+                  pattern="^[0-9+ ]*$"
+                  inputMode="tel"
                 />
               </div>
               <div>
@@ -122,6 +197,7 @@ export default function Contact() {
                   rows={4}
                   className="border-orange-200 focus:border-red-500 rounded px-3 py-2 w-full"
                   required
+                  maxLength={1000}
                 />
               </div>
               <button
@@ -132,8 +208,13 @@ export default function Contact() {
               >
                 {loading ? "Envoi en cours..." : "Envoyer le Message"}
               </button>
+              {error && (
+                <div className="mt-4 text-red-600 font-semibold" aria-live="polite">
+                  {error}
+                </div>
+              )}
               {success && (
-                <div className="mt-4 text-green-600 font-semibold">
+                <div className="mt-4 text-green-600 font-semibold" aria-live="polite">
                   ✔️ Message envoyé ! Merci, on revient vers toi très vite.
                 </div>
               )}
@@ -155,7 +236,9 @@ export default function Contact() {
                 <div>
                   <h4 className="font-bold text-red-700">Adresse</h4>
                   <p className="text-gray-600">
-                    Stade Municipal d'Honfleur
+                    Terrain de Baseball à l'espace sportif René le Floch
+                    <br />
+                    Avenue de la brigade Piron
                     <br />
                     14600 Honfleur, France
                   </p>
@@ -173,7 +256,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="font-bold text-orange-700">Téléphone</h4>
-                  <p className="text-gray-600">06 12 34 56 78</p>
+                  <p className="text-gray-600">06.30.32.30.76</p>
                 </div>
               </div>
             </a>
@@ -188,7 +271,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="font-bold text-yellow-700">Email</h4>
-                  <p className="text-gray-600">contact@comets-honfleur.fr</p>
+                  <p className="text-gray-600">honfleurcomets@gmail.com</p>
                 </div>
               </div>
             </a>

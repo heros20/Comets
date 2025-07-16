@@ -1,13 +1,30 @@
 "use client";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function Header() {
+interface HeaderProps {
+  onLogoClick?: () => void;
+}
+
+export default function Header({ onLogoClick }: HeaderProps) {
   const [open, setOpen] = useState(false);
   const [isLogged, setIsLogged] = useState<boolean | null>(null);
   const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Ferme le menu si clic à l'extérieur
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    window.addEventListener("mousedown", handleClick);
+    return () => window.removeEventListener("mousedown", handleClick);
+  }, [open]);
 
   useEffect(() => {
     async function checkSession() {
@@ -29,6 +46,7 @@ export default function Header() {
     router.push("/");
   };
 
+  // Liens du menu
   const menuLinks = (
     <>
       <Link
@@ -58,6 +76,13 @@ export default function Header() {
         onClick={() => setOpen(false)}
       >
         Contact
+      </Link>
+      <Link
+        href="/classement"
+        className="block px-4 py-2 text-gray-700 hover:text-yellow-500 font-bold transition-colors"
+        onClick={() => setOpen(false)}
+      >
+        Classement
       </Link>
     </>
   );
@@ -96,12 +121,15 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur shadow-lg transition-shadow">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between relative">
         <div className="flex items-center gap-4">
+          {/* Logo cliquable */}
           <img
             src="/images/honfleurcomets.png"
             alt="Logo équipe de baseball Les Comets d'Honfleur, club de baseball à Honfleur en Normandie"
-            className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl"
+            className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl cursor-pointer"
+            style={{ userSelect: "none" }}
+            onClick={onLogoClick}
           />
           <div>
             <h1 className="text-2xl font-extrabold text-red-700 tracking-wider uppercase">
@@ -123,77 +151,62 @@ export default function Header() {
         </nav>
 
         {/* Burger pour mobile/tablette */}
-        <button
-          className="custom-md:hidden p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-400"
-          onClick={() => setOpen(o => !o)}
-          aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-        >
-          {open ? (
-            <X className="w-7 h-7 text-red-700" />
-          ) : (
-            <Menu className="w-7 h-7 text-red-700" />
-          )}
-        </button>
-      </div>
-
-      {/* Overlay menu mobile/tablette */}
-      {open && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm custom-md:hidden flex flex-col"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            className="bg-white shadow-xl rounded-b-2xl mx-4 mt-8 pb-4 animate-slideDown"
-            style={{ minWidth: 220, maxWidth: 320, marginLeft: "auto", marginRight: "auto" }}
-            onClick={e => e.stopPropagation()}
+        <div className="custom-md:hidden relative">
+          <button
+            className="p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-400"
+            onClick={() => setOpen((o) => !o)}
+            aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           >
-            <div className="flex justify-end pr-2 pt-2">
-              <button
-                className="p-2 rounded-full hover:bg-gray-200"
-                onClick={() => setOpen(false)}
-                aria-label="Fermer le menu"
-              >
-                <X className="w-6 h-6 text-red-700" />
-              </button>
-            </div>
-            <nav className="flex flex-col gap-1">{menuLinks}</nav>
-            <div className="mt-4 flex flex-col gap-2 px-4">
-              {isLogged ? (
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white font-bold transition-colors"
-                >
-                  Déconnexion
-                </button>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
+            {open ? (
+              <X className="w-7 h-7 text-red-700" />
+            ) : (
+              <Menu className="w-7 h-7 text-red-700" />
+            )}
+          </button>
+          {open && (
+            <div
+              ref={menuRef}
+              className="absolute right-0 mt-2 bg-white shadow-xl rounded-xl min-w-[180px] animate-slideDown z-40"
+            >
+              <nav className="flex flex-col gap-1">{menuLinks}</nav>
+              <div className="mt-2 flex flex-col gap-2 px-4 pb-2">
+                {isLogged ? (
+                  <button
+                    onClick={handleLogout}
                     className="px-3 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white font-bold transition-colors"
-                    onClick={() => setOpen(false)}
                   >
-                    Connexion
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-colors"
-                    onClick={() => setOpen(false)}
-                  >
-                    Inscription
-                  </Link>
-                </>
-              )}
+                    Déconnexion
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="px-3 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white font-bold transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      Connexion
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      Inscription
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Animation du menu mobile */}
       <style jsx>{`
         @keyframes slideDown {
           from {
             opacity: 0;
-            transform: translateY(-30px);
+            transform: translateY(-15px);
           }
           to {
             opacity: 1;
@@ -201,7 +214,7 @@ export default function Header() {
           }
         }
         .animate-slideDown {
-          animation: slideDown 0.25s cubic-bezier(0.46, 0.03, 0.52, 0.96);
+          animation: slideDown 0.2s cubic-bezier(0.46, 0.03, 0.52, 0.96);
         }
       `}</style>
     </header>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import NewsAdmin from "@/components/admin/NewsAdmin";
 import StatsAdmin from "@/components/admin/StatsAdmin";
 import TeamAdmin from "@/components/admin/TeamAdmin";
 import GalleryAdmin from "@/components/admin/GalleryAdmin";
@@ -39,11 +40,11 @@ export default function Admin() {
     const stored = localStorage.getItem(TAB_KEY);
     if (
       stored &&
-      ["stats", "team", "gallery", "messages", "logs"].includes(stored)
+      ["news", "gallery", "messages", "logs"].includes(stored)
     ) {
       setTab(stored);
     } else {
-      setTab("stats");
+      setTab("news");
     }
   }, []);
 
@@ -102,33 +103,30 @@ export default function Admin() {
           {scrapeLoading ? "Mise à jour en cours..." : "Mettre à jour les données"}
         </button>
       </div>
-        {scrapeResult && (
-  <div className="text-center mb-4 space-y-1">
-    {scrapeResult.error ? (
-      <div className="text-red-700 font-bold">
-        Erreur ❌ : {scrapeResult.error}
-      </div>
-    ) : (
-      <>
-        <div className="text-green-700 font-bold">
-          {scrapeResult.message || "Mise à jour réussie !"}
+      {scrapeResult && (
+        <div className="text-center mb-4 space-y-1">
+          {scrapeResult.error ? (
+            <div className="text-red-700 font-bold">
+              Erreur ❌ : {scrapeResult.error}
+            </div>
+          ) : (
+            <>
+              <div className="text-green-700 font-bold">
+                {scrapeResult.message || "Mise à jour réussie !"}
+              </div>
+              {scrapeResult.details && (
+                <div className="text-gray-700 text-sm mt-2">
+                  Joueurs mis à jour : {scrapeResult.details.teamsUpdated}<br />
+                  Matchs mis à jour : {scrapeResult.details.gamesUpdated}
+                </div>
+              )}
+            </>
+          )}
         </div>
-        {scrapeResult.details && (
-          <div className="text-gray-700 text-sm mt-2">
-            Joueurs mis à jour : {scrapeResult.details.teamsUpdated}<br />
-            Matchs mis à jour : {scrapeResult.details.gamesUpdated}
-          </div>
-        )}
-      </>
-    )}
-  </div>
-)}
-
-
+      )}
 
       <div className="flex justify-center mb-6 gap-3 flex-wrap">
-        {/* "stats", "team", "gallery", "messages", "logs"*/}
-        {["gallery", "messages", "logs"].map((section) => (
+        {["news", "gallery", "messages", "logs"].map((section) => (
           <button
             key={section}
             onClick={() => setTab(section)}
@@ -138,19 +136,20 @@ export default function Admin() {
                 : "bg-white text-red-600 border border-red-600 hover:bg-red-50"
             }`}
           >
-            {section.charAt(0).toUpperCase() + section.slice(1)}
+            {/* Uppercase le premier caractère pour "Articles" */}
+            {section === "news"
+              ? "Articles"
+              : section.charAt(0).toUpperCase() + section.slice(1)}
           </button>
         ))}
       </div>
 
-    <div className="bg-white rounded-2xl shadow-xl p-6 max-w-3xl mx-auto">
-  {/* {tab === "stats" && <StatsAdmin />} */}
-  {/* {tab === "team" && <TeamAdmin />} */}
-  {tab === "gallery" && <GalleryAdmin />}
-  {tab === "messages" && <MessagesAdmin />}
-  {tab === "logs" && <LogsAdmin />}
-</div>
-
+      <div className="bg-white rounded-2xl shadow-xl p-6 max-w-3xl mx-auto">
+        {tab === "news" && <NewsAdmin />}
+        {tab === "gallery" && <GalleryAdmin />}
+        {tab === "messages" && <MessagesAdmin />}
+        {tab === "logs" && <LogsAdmin />}
+      </div>
     </div>
   );
 }

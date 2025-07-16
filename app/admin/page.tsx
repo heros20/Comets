@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
-import AdminClient from "./AdminClient"; // import de ton UI client
+import AdminClient from "./AdminClient";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,10 +9,17 @@ const supabase = createClient(
 );
 
 export default async function AdminPage() {
-  const adminSession = cookies().get("admin_session");
+  let cookieStore;
+  // Si cookies() est async, on attend ; sinon, fallback sync.
+  try {
+    cookieStore = await cookies();
+  } catch {
+    cookieStore = cookies();
+  }
+  const adminSession = cookieStore.get("admin_session");
 
   if (!adminSession?.value) {
-    redirect("/login"); // Pas connecté
+    redirect("/login");
   }
 
   const username = adminSession.value;
@@ -24,13 +31,12 @@ export default async function AdminPage() {
     .single();
 
   if (error || !data) {
-    redirect("/login"); // Utilisateur non trouvé
+    redirect("/login");
   }
 
   if (data.role !== "admin") {
-    redirect("/"); // Pas admin, redirection accueil
+    redirect("/");
   }
 
-  // Affiche ton composant client sécurisé
   return <AdminClient />;
 }

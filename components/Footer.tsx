@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white py-12 mt-16">
+    <footer className="bg-gray-900 text-white py-12 mt-16" aria-label="Pied de page club de baseball Honfleur">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Colonne 1 : club + SEO mots-clés */}
         <div>
@@ -11,7 +11,10 @@ export default function Footer() {
             <img
               src="/images/honfleurcomets.png"
               alt="Logo Les Comets d'Honfleur, club de baseball à Honfleur"
-              className="w-30 h-20 object-contain"
+              className="w-28 h-20 object-contain"
+              width={120}
+              height={80}
+              loading="lazy"
             />
           </div>
           <p className="text-gray-400 text-sm leading-relaxed">
@@ -20,9 +23,13 @@ export default function Footer() {
             Rejoignez l’aventure du <span className="text-orange-400 font-semibold">baseball normand</span> !
           </p>
           {/* Bloc d’adresse pour Google */}
-          <address className="not-italic mt-4 text-gray-400 text-xs leading-5">
-            Stade Municipal d’Honfleur<br />
-            14600 Honfleur, France<br />
+          <address className="not-italic mt-4 text-gray-400 text-xs leading-5" aria-label="Adresse du club de baseball Honfleur">
+            Terrain de Baseball à l'espace sportif René le Floch
+                    <br />
+                    Avenue de la brigade Piron
+                    <br />
+                    14600 Honfleur, France
+                    <br />
             <a
               href="https://www.google.com/maps/search/?api=1&query=Stade+Municipal+Honfleur+14600"
               target="_blank"
@@ -35,7 +42,7 @@ export default function Footer() {
         </div>
 
         {/* Colonne 2 : Liens rapides */}
-        <div>
+        <nav aria-label="Liens rapides club de baseball Honfleur">
           <h4 className="text-lg font-bold mb-4 text-orange-300">Liens rapides</h4>
           <ul className="space-y-2">
             <li>
@@ -59,12 +66,12 @@ export default function Footer() {
               </Link>
             </li>
           </ul>
-        </div>
+        </nav>
 
         {/* Colonne 3 : horaires & contact */}
         <div>
           <h4 className="text-lg font-bold mb-4 text-orange-300">Entraînements baseball</h4>
-          <ul className="space-y-2 text-gray-400">
+          <ul className="space-y-2 text-gray-400 text-sm">
             <li>
               <strong>Mardi</strong> : 17h00 – 19h00<br />
               (pitchers/catchers, initiation, progression)
@@ -86,8 +93,8 @@ export default function Footer() {
       </div>
       <div className="border-t border-gray-800 mt-10 pt-8 text-center">
         <p className="text-gray-400 text-xs">
-          © {new Date().getFullYear()} Les Comets d'Honfleur – Équipe de Baseball Normandie. Tous droits réservés.<br />
-          Site réalisé par les joueurs pour les passionnés de baseball !
+          © {new Date().getFullYear()} Honfleur Baseball-Club – Les Comets. Équipe officielle de Baseball en Normandie.<br />
+          Site réalisé par les joueurs pour les passionnés de baseball !
         </p>
       </div>
     </footer>

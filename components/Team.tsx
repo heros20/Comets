@@ -2,6 +2,18 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// --- Mapping des équipes (abréviation -> nom complet)
+const TEAM_MAP: Record<string, string> = {
+  HON: "Honfleur",
+  ROU: "Rouen",
+  LHA: "Le Havre",
+  CHE: "Cherbourg",
+  CAE: "Caen",
+  AND: "Les Andelys",
+  WAL: "Wallabies", // Corrigé ici !
+  // Ajoute si jamais il y a de nouvelles équipes dans la ligue
+};
+
 // --- Types inchangés
 type Player = {
   id: number;
@@ -108,15 +120,15 @@ export default function TeamPage() {
       <div ref={tabTopRef}></div>
       {/* Titre */}
       <div className="max-w-2xl mx-auto mb-7 p-5 rounded-2xl bg-white/90 backdrop-blur shadow-lg">
-  <h2 className="text-3xl font-bold text-red-700 mb-2 text-center tracking-wide">
-    Effectif & Résultats – Comets Baseball Honfleur 2025
-  </h2>
-  {/* Paragraphe d’intro pour Google/SEO */}
-  <p className="text-center text-base text-gray-700">
-    Retrouvez ici l’effectif à jour de l’équipe <strong>Les Comets d’Honfleur</strong> (club de baseball à Honfleur, Normandie) : tous les joueurs, les résultats des matchs de la saison 2025, et le lien direct vers chaque fiche FFBS.<br />
-    Suivez les performances de l’équipe de baseball d’Honfleur, les victoires et les adversaires !
-  </p>
-</div>
+        <h2 className="text-3xl font-bold text-red-700 mb-2 text-center tracking-wide">
+          Effectif & Résultats – Comets Baseball Honfleur 2025
+        </h2>
+        {/* Paragraphe d’intro pour Google/SEO */}
+        <p className="text-center text-base text-gray-700">
+          Retrouvez ici l’effectif à jour de l’équipe <strong>Les Comets d’Honfleur</strong> (club de baseball à Honfleur, Normandie) : tous les joueurs, les résultats des matchs de la saison 2025, et le lien direct vers chaque fiche FFBS.<br />
+          Suivez les performances de l’équipe de baseball d’Honfleur, les victoires et les adversaires !
+        </p>
+      </div>
 
       {/* Onglets */}
       <div className="flex justify-center gap-2 mb-4">
@@ -172,7 +184,7 @@ export default function TeamPage() {
                             key={p.id}
                             className="even:bg-orange-50 hover:bg-orange-200/70 transition"
                           >
-                            <td className="p-3 border text-center">{p.team_abbr}</td>
+                            <td className="p-3 border text-center font-bold text-orange-700">{TEAM_MAP[p.team_abbr] || p.team_abbr}</td>
                             <td className="p-3 border font-semibold text-center">
                               {p.first_name} {p.last_name}
                             </td>
@@ -207,7 +219,7 @@ export default function TeamPage() {
                               layout
                               className="even:bg-orange-50 hover:bg-orange-200/70 transition"
                             >
-                              <td className="p-3 border text-center">{p.team_abbr}</td>
+                              <td className="p-3 border text-center font-bold text-orange-700">{TEAM_MAP[p.team_abbr] || p.team_abbr}</td>
                               <td className="p-3 border font-semibold text-center">
                                 {p.first_name} {p.last_name}
                               </td>
@@ -299,33 +311,42 @@ export default function TeamPage() {
                     <>
                       {gamesNoAnim ? (
                         games.slice(0, visibleGames).map((g) => (
-                          <tr
-                            key={g.id}
-                            className="even:bg-orange-50 hover:bg-orange-200/70 transition"
-                          >
+                          <tr key={g.id} className="even:bg-orange-50 hover:bg-orange-200/70 transition">
                             <td className="p-3 border text-center">{g.gameNumber}</td>
-                            <td className="p-3 border text-center">{g.date}</td>
-                            <td className="p-3 border text-center">{g.isHome ? "Oui" : "Non"}</td>
-                            <td className="p-3 border text-center">HON</td>
-                            <td className="p-3 border text-center flex items-center gap-2">
+                            <td className="p-3 border text-center bg-gray-50 text-gray-800 font-bold">{g.date}</td>
+                            <td className="p-3 border text-center">
+                              {g.isHome ? (
+                                <span className="px-2 py-1 rounded-full bg-green-50 text-green-700 text-sm font-semibold">Oui</span>
+                              ) : (
+                                <span className="px-2 py-1 rounded-full bg-red-50 text-red-600 text-sm font-semibold">Non</span>
+                              )}
+                            </td>
+                            <td className="p-3 border text-center font-bold text-orange-700">
+                              {TEAM_MAP["HON"] || g.team_abbr}
+                            </td>
+                            <td className="p-3 border text-center font-bold text-red-700 flex items-center justify-center gap-2">
                               {g.opponentLogo && (
                                 <img
                                   src={g.opponentLogo}
-                                  alt={`Logo de l'équipe de baseball ${g.opponent}`}
+                                  alt={`Logo de l'équipe de baseball ${TEAM_MAP[g.opponent] || g.opponent}`}
                                   className="inline-block w-6 h-6 mr-2"
                                 />
                               )}
-                              {g.opponent}
+                              {TEAM_MAP[g.opponent] || g.opponent}
                             </td>
                             <td className="p-3 border text-center">
-                              {g.teamScore} - {g.opponentScore}
+                              <span className="bg-orange-100 rounded px-2 py-1 font-mono">
+                                {g.teamScore} - {g.opponentScore}
+                              </span>
                             </td>
                             <td className="p-3 border text-center">
-                              {g.result === "W"
-                                ? "Victoire"
-                                : g.result === "L"
-                                ? "Défaite"
-                                : "Nul"}
+                              {g.result === "W" ? (
+                                <span className="font-bold text-green-700 bg-green-50 rounded-full px-2 py-1">Victoire</span>
+                              ) : g.result === "L" ? (
+                                <span className="font-bold text-red-600 bg-red-50 rounded-full px-2 py-1">Défaite</span>
+                              ) : (
+                                <span className="font-bold text-orange-700 bg-orange-50 rounded-full px-2 py-1">Nul</span>
+                              )}
                             </td>
                             <td className="p-3 border text-center">
                               {g.boxscore ? (
@@ -333,7 +354,7 @@ export default function TeamPage() {
                                   href={g.boxscore}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  aria-label={`Boxscore du match Comets Honfleur vs ${g.opponent} – baseball Honfleur`}
+                                  aria-label={`Boxscore du match Comets Honfleur vs ${TEAM_MAP[g.opponent] || g.opponent} – baseball Honfleur`}
                                   className="text-orange-600 hover:underline font-bold"
                                 >
                                   Voir
@@ -358,28 +379,40 @@ export default function TeamPage() {
                               className="even:bg-orange-50 hover:bg-orange-200/70 transition"
                             >
                               <td className="p-3 border text-center">{g.gameNumber}</td>
-                              <td className="p-3 border text-center">{g.date}</td>
-                              <td className="p-3 border text-center">{g.isHome ? "Oui" : "Non"}</td>
-                              <td className="p-3 border text-center">HON</td>
-                              <td className="p-3 border text-center flex items-center gap-2">
+                              <td className="p-3 border text-center bg-gray-50 text-gray-800 font-bold">{g.date}</td>
+                              <td className="p-3 border text-center">
+                                {g.isHome ? (
+                                  <span className="px-2 py-1 rounded-full bg-green-50 text-green-700 text-sm font-semibold">Oui</span>
+                                ) : (
+                                  <span className="px-2 py-1 rounded-full bg-red-50 text-red-600 text-sm font-semibold">Non</span>
+                                )}
+                              </td>
+                              <td className="p-3 border text-center font-bold text-orange-700">
+                                {TEAM_MAP["HON"] || g.team_abbr}
+                              </td>
+                              <td className="p-3 border text-center font-bold text-red-700 flex items-center justify-center gap-2">
                                 {g.opponentLogo && (
                                   <img
                                     src={g.opponentLogo}
-                                    alt={`Logo de l'équipe de baseball ${g.opponent}`}
+                                    alt={`Logo de l'équipe de baseball ${TEAM_MAP[g.opponent] || g.opponent}`}
                                     className="inline-block w-6 h-6 mr-2"
                                   />
                                 )}
-                                {g.opponent}
+                                {TEAM_MAP[g.opponent] || g.opponent}
                               </td>
                               <td className="p-3 border text-center">
-                                {g.teamScore} - {g.opponentScore}
+                                <span className="bg-orange-100 rounded px-2 py-1 font-mono">
+                                  {g.teamScore} - {g.opponentScore}
+                                </span>
                               </td>
                               <td className="p-3 border text-center">
-                                {g.result === "W"
-                                  ? "Victoire"
-                                  : g.result === "L"
-                                  ? "Défaite"
-                                  : "Nul"}
+                                {g.result === "W" ? (
+                                  <span className="font-bold text-green-700 bg-green-50 rounded-full px-2 py-1">Victoire</span>
+                                ) : g.result === "L" ? (
+                                  <span className="font-bold text-red-600 bg-red-50 rounded-full px-2 py-1">Défaite</span>
+                                ) : (
+                                  <span className="font-bold text-orange-700 bg-orange-50 rounded-full px-2 py-1">Nul</span>
+                                )}
                               </td>
                               <td className="p-3 border text-center">
                                 {g.boxscore ? (
@@ -387,7 +420,7 @@ export default function TeamPage() {
                                     href={g.boxscore}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    aria-label={`Boxscore du match Comets Honfleur vs ${g.opponent} – baseball Honfleur`}
+                                    aria-label={`Boxscore du match Comets Honfleur vs ${TEAM_MAP[g.opponent] || g.opponent} – baseball Honfleur`}
                                     className="text-orange-600 hover:underline font-bold"
                                   >
                                     Voir
@@ -440,10 +473,11 @@ export default function TeamPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-      <div className="text-center text-orange-400 mt-4 text-sm">
+        <div className="text-center text-black mt-4 text-sm">
         Données issues de la FFBS, fédération française de baseball.
       </div>
+      </div>
+      
     </div>
   );
 }
