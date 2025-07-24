@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://les-comets-honfleur.vercel.app/sitemap.xml

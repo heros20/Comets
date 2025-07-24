@@ -1,0 +1,50 @@
+name: Scrape & Update Supabase
+
+on:
+  schedule:
+    - cron: '0 5 * * *' # tous les jours à 5h du matin UTC (modifie si tu veux)
+  workflow_dispatch: # permet de lancer manuellement
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # ou ta version préférée
+
+      - name: Install only scraping deps
+        run: npm install cheerio @supabase/supabase-js node-fetch --force
+
+      - name: Run classement scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/scrapeClassement.js
+
+      - name: Run team scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/scrapeTeam.js
+
+      - name: Discord notification
+        if: always()  # s’exécute même si ça plante avant
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [ "$JOB_STATUS" = "success" ]; then
+            MESSAGE="@everyone ✅ Scrape Comets terminé avec succès !"
+          else
+            MESSAGE="@everyone ❌ Scrape Comets échoué !"
+          fi
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"$MESSAGE\"}" \
+               $DISCORD_WEBHOOK_URL
